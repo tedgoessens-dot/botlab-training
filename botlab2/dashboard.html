@@ -113,6 +113,39 @@ dl.cfg{display:grid;grid-template-columns:auto auto;gap:4px 14px;font-size:12.5p
 dl.cfg dt{color:var(--muted)}dl.cfg dd{margin:0}
 #toast{visibility:hidden;position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(120px);background:#13233a;border:1px solid #2b4a70;color:#dbeafe;padding:10px 16px;border-radius:12px;font-weight:600;transition:transform .3s;z-index:20;max-width:92vw;text-align:center}
 #toast.show{visibility:visible;transform:translateX(-50%) translateY(0)}
+#riskcard{grid-column:1/-1;border-color:#3b4a1f;background:linear-gradient(180deg,#121a10,#111725 60%)}
+.rgrid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:16px}
+.rl{font-size:12.5px;color:#c4cee2;margin-bottom:6px}.small{font-size:11.5px;margin-top:6px}
+input[type=range]{width:100%;accent-color:#f59e0b;height:30px;margin:0}
+.riskbig{font-size:22px;font-weight:700;color:#fcd34d}
+.seg.big button{padding:9px 14px;font-size:13.5px}
+.rules{margin:12px 0 0;padding-left:18px;font-size:12.5px;color:#c3cde0;columns:2;column-gap:28px}.rules li{margin-bottom:5px;break-inside:avoid}
+.kk{display:grid;gap:8px}.kk .r{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kk .t{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.kk .v{font-size:13px;margin-top:2px}
+.kk .ef{font-size:11.5px;margin-top:2px;color:#fcd34d}.kk .ef.none{color:var(--muted)}
+.room{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:12.5px;margin-top:4px}
+.room .bar{height:9px;background:#0c1220;border:1px solid var(--line);border-radius:6px;overflow:hidden}.room .bar i{display:block;height:100%}
+.tw{overflow-x:auto}
+table.tb{width:100%;border-collapse:collapse;font-size:12.5px}
+table.tb th{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.tb td{padding:7px 8px;border-bottom:1px solid #1a2233;text-align:right;vertical-align:top}
+table.tb th.l,table.tb td.l{text-align:left}
+table.tb td small{display:block;font-size:10.5px;color:var(--muted)}
+table.tb tr.tot td{font-weight:700;background:#0f1522}table.tb td.part{opacity:.6}
+table.tb.click tbody tr{cursor:pointer}table.tb.click tbody tr:hover td{background:#152036}
+.feed li{cursor:pointer}.feed li:hover{background:#152036}
+.bot{cursor:pointer}.bot:hover{border-color:#3a4760}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.filters select{font:inherit;font-size:12.5px;background:#0c1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+a.btn{display:inline-block;font-size:12.5px;font-weight:600;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 11px;text-decoration:none}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;z-index:30;padding:max(40px,env(safe-area-inset-top)) 12px 20px;overflow:auto}
+#modal.on{display:flex}
+#modal .box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;width:min(640px,100%)}
+#modal h3{margin:0 0 10px;font-size:16px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+dl.det{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:0}dl.det dt{color:var(--muted)}dl.det dd{margin:0}
+.tax p{font-size:12.5px;color:#c3cde0;margin:6px 0}.tax ul{font-size:12.5px;color:#c3cde0;margin:6px 0;padding-left:18px}.tax li{margin-bottom:4px}
+.tax a{color:#93c5fd}
+@media (max-width:860px){.rgrid{grid-template-columns:1fr}.rules{columns:1}}
 @media (max-width:1300px){.bots{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:1000px){.bots{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:860px){main{grid-template-columns:minmax(0,1fr);padding:10px}.span2{grid-column:auto}.prop{grid-template-columns:1fr}}
 @media (max-width:520px){.bots{grid-template-columns:minmax(0,1fr)}}
@@ -136,6 +169,30 @@ dl.cfg dt{color:var(--muted)}dl.cfg dd{margin:0}
 <main>
   <div class="banner papier" id="banner">Papiermodus: de bots handelen op <b>echte koersen</b> met nep-geld. Er gaat geen geld over de lijn.</div>
 
+  <section class="card" id="riskcard">
+    <h2><span>🛡️ Opdracht: handelen met zo weinig mogelijk risico</span></h2>
+    <div class="rgrid">
+      <div>
+        <div class="rl">Risico per trade (van het vermogen van elke bot)</div>
+        <div><span class="riskbig mono" id="riskval">–</span> <span class="muted" id="risklbl"></span></div>
+        <input type="range" id="risk" min="0.25" max="5" step="0.25" value="1" aria-label="Risico per trade in procent">
+        <div class="tracklbl"><span>0,25% · heel voorzichtig</span><span>5% · gedurfd</span></div>
+        <div class="muted small" id="riskexpl"></div>
+      </div>
+      <div>
+        <div class="rl">Handelsstijl</div>
+        <div class="seg big" id="hz"><button data-h="uur">Uur</button><button data-h="dag">Dag</button><button data-h="week">Week</button><button data-h="maand">Maand</button></div>
+        <div class="muted small" id="hzexpl"></div>
+      </div>
+      <div>
+        <div class="rl">Economie (jouw inschatting)</div>
+        <div class="seg big" id="macro"><button data-x="gunstig">Gunstig</button><button data-x="neutraal">Neutraal</button><button data-x="ongunstig">Ongunstig</button></div>
+        <div class="muted small"><b>Gunstig:</b> rente daalt, inflatie zakt, beurzen stijgen. <b>Ongunstig:</b> rente stijgt, recessievrees, beurzen dalen. Twijfel je, kies Neutraal.</div>
+      </div>
+    </div>
+    <ul class="rules" id="rules"></ul>
+  </section>
+
   <section class="card" id="sigwhy">
     <h2><span>Waarom dit signaal</span><span class="muted" id="sigkey" style="text-transform:none;letter-spacing:0"></span></h2>
     <ul class="why3" id="sigwhyl"></ul>
@@ -151,9 +208,14 @@ dl.cfg dt{color:var(--muted)}dl.cfg dd{margin:0}
     <div class="bots" id="bots"></div>
   </section>
 
+  <section class="card span2">
+    <h2><span>💶 Verdiend</span><span class="muted" id="earnnote" style="text-transform:none;letter-spacing:0"></span></h2>
+    <div class="tw"><table class="tb" id="earn" style="min-width:620px"></table></div>
+  </section>
+
   <section class="card">
     <h2><span id="mkt">BTC-EUR</span>
-      <div class="seg" id="tf"><button data-tf="1m">1m</button><button data-tf="5m">5m</button><button data-tf="15m">15m</button><button data-tf="1u">1u</button><button data-tf="1d">1d</button></div>
+      <div class="seg" id="tf"><button data-tf="1m">1m</button><button data-tf="5m">5m</button><button data-tf="15m">15m</button><button data-tf="1u">1u</button><button data-tf="4u">4u</button><button data-tf="1d">1d</button></div>
     </h2>
     <div class="pricebar">
       <span class="price mono" id="price">–</span><span class="mono" id="chg24"></span>
@@ -163,13 +225,18 @@ dl.cfg dt{color:var(--muted)}dl.cfg dd{margin:0}
   </section>
 
   <section class="card">
+    <h2><span>🧭 Marktkompas</span><span class="muted" style="text-transform:none;letter-spacing:0">trend · cyclus · economie · sentiment</span></h2>
+    <div class="kk" id="kompas"></div>
+  </section>
+
+  <section class="card">
     <h2><span>Trend per tijdschaal</span></h2>
     <div class="trends" id="trends"></div>
     <div class="emas mono" id="emas"></div>
   </section>
 
   <section class="card">
-    <h2><span>Steun &amp; weerstand</span><span class="muted" style="text-transform:none;letter-spacing:0">uit swing-toppen en -bodems (1u + 15m)</span></h2>
+    <h2><span>Steun &amp; weerstand</span><span class="muted" id="lvlsub" style="text-transform:none;letter-spacing:0"></span></h2>
     <ul class="lvls" id="lvls"></ul>
   </section>
 
@@ -179,8 +246,24 @@ dl.cfg dt{color:var(--muted)}dl.cfg dd{margin:0}
   </section>
 
   <section class="card">
-    <h2><span>Live trades</span></h2>
+    <h2><span>Live trades</span><span class="muted" style="text-transform:none;letter-spacing:0">tik op een regel voor details</span></h2>
     <ul class="feed" id="feed"></ul>
+  </section>
+
+  <section class="card span2" id="logcard">
+    <h2><span>📒 Logboek</span><span class="muted" style="text-transform:none;letter-spacing:0">alles wat de bots en jij gedaan hebben · tik op een regel voor details</span></h2>
+    <div class="filters">
+      <select id="lfmodus"><option value="">Papier en echt</option><option value="echt">Alleen echt geld</option><option value="papier">Alleen papier</option></select>
+      <select id="lfbot"><option value="">Alle bots</option></select>
+      <select id="lfsoort"><option value="">Alle acties</option><option value="trade">Alleen kopen/verkopen</option><option value="voorstel">Voorstellen en akkoord</option><option value="systeem">Systeem en instellingen</option></select>
+      <a class="btn" href="/api/logboek.csv" download>⬇️ Download logboek (Excel/CSV)</a>
+    </div>
+    <div class="tw" style="max-height:420px;overflow:auto"><table class="tb click" id="logtab" style="min-width:760px"></table></div>
+  </section>
+
+  <section class="card span2 tax" id="taxcard">
+    <h2><span>🧾 Belasting (Nederland)</span><span class="muted" style="text-transform:none;letter-spacing:0">hulpmiddel voor je aangifte · geen belastingadvies</span></h2>
+    <div id="taxbody"></div>
   </section>
 
   <section class="card">
@@ -217,6 +300,7 @@ dl.cfg dt{color:var(--muted)}dl.cfg dd{margin:0}
   </section>
 </main>
 <div id="toast"></div>
+<div id="modal"><div class="box"><h3><span id="mtitle"></span><button id="mclose">✕ Sluiten</button></h3><div id="mbody"></div></div></div>
 
 <script>
 "use strict";
@@ -243,7 +327,7 @@ let tt;function toast(m){if(!m)return;const t=$('#toast');t.textContent=m;t.clas
 
 // ---------- tekenen ----------
 function fit(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1,W=Math.round(r.width*d),H=Math.round(r.height*d);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);return {ctx,w:r.width,h:r.height};}
-const TFS={'1m':60,'5m':300,'15m':900,'1u':3600,'1d':86400};
+const TFS={'1m':60,'5m':300,'15m':900,'1u':3600,'4u':14400,'1d':86400};
 function drawPrice(){
   const {ctx,w,h}=fit($('#cv-price'));const all=S.candles; if(!all.length)return;
   const padR=64,padB=20,padT=10,n=Math.max(30,Math.min(150,Math.floor((w-padR)/8))),cs=all.slice(-n),B=TFS[S.tf];
@@ -252,12 +336,12 @@ function drawPrice(){
   ctx.font='11px Consolas, monospace';ctx.textBaseline='middle';
   for(let g=0;g<=4;g++){const v=lo+(hi-lo)*g/4,y=Y(v);ctx.strokeStyle='#1b2335';ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.fillStyle='#6b7690';ctx.fillText(fmtP.format(v),w-padR+6,y);}
   const st=Math.max(1,Math.round(n/5));ctx.textAlign='center';
-  for(let i=0;i<cs.length;i+=st){const t=cs[i].t;ctx.fillStyle='#6b7690';ctx.fillText(S.tf==='1d'?dStr(t):S.tf==='1u'?dStr(t)+' '+tStr(t,false):tStr(t,false),X(i),h-8);}
+  for(let i=0;i<cs.length;i+=st){const t=cs[i].t;ctx.fillStyle='#6b7690';ctx.fillText(S.tf==='1d'?dStr(t):(S.tf==='1u'||S.tf==='4u')?dStr(t)+' '+tStr(t,false):tStr(t,false),X(i),h-8);}
   ctx.textAlign='left';
   // steun/weerstand
   for(const L of S.levels){const y=Y(L.p);if(y<padT||y>h-padB)continue;const main=(S.sup&&L.p===S.sup.p)||(S.res&&L.p===S.res.p);const c=L.kind==='steun'?'#22c55e':'#ef4444';
     ctx.globalAlpha=main?.95:.35;ctx.strokeStyle=c;ctx.lineWidth=main?2:1;ctx.setLineDash(main?[]:[6,4]);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.setLineDash([]);
-    if(main){ctx.globalAlpha=.10;ctx.fillStyle=c;const z=Math.abs(Y(L.p*(1+(L.kind==='steun'?1:-1)*S.cfg.zone_pct/100))-y);ctx.fillRect(0,L.kind==='steun'?y-z:y,w-padR,z);}
+    if(main){ctx.globalAlpha=.10;ctx.fillStyle=c;const z=Math.abs(Y(L.p*(1+(L.kind==='steun'?1:-1)*S.hz.zone/100))-y);ctx.fillRect(0,L.kind==='steun'?y-z:y,w-padR,z);}
     ctx.globalAlpha=1;ctx.fillStyle=c;ctx.font='10.5px Segoe UI, sans-serif';ctx.fillText(`${L.kind==='steun'?'Steun':'Weerstand'} ${fmtP.format(L.p)} (${L.n}×)`,w-padR-150,y+(L.kind==='steun'?12:-6));ctx.font='11px Consolas, monospace';ctx.lineWidth=1;}
   const bw=Math.max(1,cw*.62);
   cs.forEach((k,i)=>{const up=k.c>=k.o;ctx.strokeStyle=ctx.fillStyle=up?'#22c55e':'#ef4444';const x=X(i);ctx.beginPath();ctx.moveTo(x,Y(k.h));ctx.lineTo(x,Y(k.l));ctx.stroke();const y1=Y(Math.max(k.o,k.c)),y2=Y(Math.min(k.o,k.c));ctx.fillRect(x-bw/2,y1,bw,Math.max(1,y2-y1));});
@@ -304,7 +388,8 @@ function render(){
   if(!S.ready){return;}
   $('#price').textContent=fmtE.format(S.price);const c=$('#chg24');c.textContent=pct(S.chg24)+' (24 u)';c.className='mono '+cls(S.chg24);
   renderSignal();renderLevels();$('#mkt').textContent=`${S.market} · ${S.beurs}`;
-  renderProps();renderBots();renderTrends();renderFeed();renderMode();renderPhone();$('#logout').style.display=S.phone?'none':'inline';
+  renderRisk();renderProps();renderBots();renderEarn();renderKompas();renderTrends();renderFeed();renderMode();renderPhone();$('#logout').style.display=S.phone?'none':'inline';
+  $('#lvlsub').textContent=`swing-toppen en -bodems (${S.hz.lv})`;
   drawPrice();drawEq();
 }
 function renderProps(){
@@ -317,7 +402,7 @@ function renderProps(){
       const what=p.kind==='buy'?`${esc(p.naam)} wil KOPEN voor ${fmtE.format(p.amount_quote)}`:`${esc(p.naam)} wil VERKOPEN: ${fmtQ.format(p.qty)} BTC`;
       return `<div class="prop" style="--c:${p.kleur}"><div><div class="what">${what}</div><div class="why">${esc(p.why)}</div><div class="meta">Marktorder ${esc(S.market)} · koers bij voorstel ${fmtP.format(p.price)} · <span class="left" data-exp="${p.expires}"></span></div></div><div class="btns"><button class="${p.kind==='buy'?'buy':'sell'}" data-a="${p.id}">✓ ${p.kind==='buy'?'Kopen':'Verkopen'}</button><button class="no" data-r="${p.id}" style="background:#ea580c;border-color:#c2410c">✕ Laten (houden)</button></div></div>`;}).join('');
   }
-  document.title=S.pending.length?`(${S.pending.length}) Akkoord nodig – Botlab`:'Botlab – Bitvavo';
+  document.title=S.pending.length?`(${S.pending.length}) Akkoord nodig – Botlab`:'Botlab – '+S.beurs;
   document.querySelectorAll('.left').forEach(el=>{const s=Math.max(0,Math.round(+el.dataset.exp-Date.now()/1000));el.textContent=`vervalt over ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;});
 }
 function renderBots(){
@@ -328,7 +413,7 @@ function renderBots(){
     const span=b.doel-b.rem,fx=Math.min(1,Math.max(0,(b.e-b.rem)/span)),mx=(b.start-b.rem)/span;
     const fill=b.e>=b.start?`left:${mx*100}%;width:${(fx-mx)*100}%;background:#22c55e`:`left:${fx*100}%;width:${(mx-fx)*100}%;background:#ef4444`;
     const posl=P?`<span class="mono">${P.side===1?'Long':'Short'} @ ${fmtP.format(P.entry)} · doel ${fmtP.format(P.tp)} · stop ${fmtP.format(P.sl)}</span> · <b class="mono ${cls(P.r)}">${pct(P.r)}</b>`:'<span class="muted">Geen open positie</span>';
-    return `<div class="bot" style="--c:${b.kleur}"><div class="top"><span class="nm"><i></i>${esc(b.naam)} ${b.live?'<span class="pill echt">ECHT</span>':'<span class="pill pap">PAPIER</span>'}</span>${pill}</div>
+    return `<div class="bot" data-bot="${b.id}" style="--c:${b.kleur}"><div class="top"><span class="nm"><i></i>${esc(b.naam)} ${b.live?'<span class="pill echt">ECHT</span>':'<span class="pill pap">PAPIER</span>'}</span>${pill}</div>
       <div class="how">${esc(b.uitleg)}</div><div class="eq mono">${fmtE.format(b.e)}</div>
       <div class="ret mono ${cls(ret)}">${pct(ret)} <span class="muted" style="font-weight:500">sinds start</span></div>
       <div class="track"><div class="fill" style="${fill}"></div><div class="mid" style="left:${mx*100}%"></div></div>
@@ -346,14 +431,14 @@ function renderTrends(){
     const t=$('#ts'+i);t.textContent=(z>.5?'▲ ':z<-.5?'▼ ':'◆ ')+lab;t.className='st '+(z>.5?'up':z<-.5?'down':'muted');
     spark($('#tc'+i),s.spark,s.ch>=0?'#22c55e':'#ef4444');});
   const E=S.ema_now||{},g=(t,n)=>E[t]&&E[t][n]!=null?fmtP.format(E[t][n]):'–';
-  $('#emas').innerHTML=`<span></span><b>9 EMA</b><b>20 EMA</b><b>200 EMA</b><span class="muted">1m</span><span>${g('1m','9')}</span><span>${g('1m','20')}</span><span class="muted">–</span><span class="muted">5m</span><span>${g('5m','9')}</span><span>${g('5m','20')}</span><span>${g('5m','200')}</span>`;
+  $('#emas').innerHTML=`<span></span><b>9 EMA</b><b>20 EMA</b><b>200 EMA</b>`+Object.keys(E).map(t=>`<span class="muted">${esc(t)}</span><span>${g(t,'9')}</span><span>${g(t,'20')}</span><span>${'200' in E[t]?g(t,'200'):'<span class="muted">–</span>'}</span>`).join('');
 }
 function renderFeed(){
   if(!S.trades.length){$('#feed').innerHTML='<li class="muted" style="display:block">Nog geen acties.</li>';return;}
   $('#feed').innerHTML=S.trades.map(x=>{
     const res=x.pnl==null?`<span class="mono">${x.p?fmtP.format(x.p):''}</span>`:`<b class="mono ${cls(x.pnl)}">${x.pnl>=0?'+':'−'}${fmtE.format(Math.abs(x.pnl))}</b>`;
     const col=/Open long/.test(x.actie)?'up':/Open short|mislukt/.test(x.actie)?'down':'muted';
-    return `<li><span class="mono muted">${tStr(x.t)}</span><span><span class="tag" style="background:${x.kleur}"></span><b>${esc(x.naam)}</b> · <span class="${col}">${esc(x.actie)}</span>${x.echt?'<span class="e">ECHT</span>':''}${x.ret!=null?` <span class="mono ${cls(x.ret)}">${pct(x.ret)}</span>`:''}</span>${res}<span class="why">${esc(x.why)}</span></li>`;}).join('');
+    return `<li data-trade="${S.trades.indexOf(x)}"><span class="mono muted">${tStr(x.t)}</span><span><span class="tag" style="background:${x.kleur}"></span><b>${esc(x.naam)}</b> · <span class="${col}">${esc(x.actie)}</span>${x.echt?'<span class="e">ECHT</span>':''}${x.ret!=null?` <span class="mono ${cls(x.ret)}">${pct(x.ret)}</span>`:''}</span>${res}<span class="why">${esc(x.why)}</span></li>`;}).join('');
 }
 function renderMode(){
   const echt=S.mode==='echt';
@@ -361,7 +446,7 @@ function renderMode(){
     :`Modus: <b style="color:#fcd34d">PAPIER</b>. ${S.keys?'API-sleutel gevonden.':'Nog geen API-sleutel ingesteld: alleen papier mogelijk.'}`;
   $('#echtrow').style.display=echt?'none':'flex';$('#paprow').style.display=echt?'flex':'none';
   $('#becht').disabled=!S.keys;
-  const c=S.cfg;$('#cfg').innerHTML=[['Start per bot',fmtE.format(c.start_eur)],['Doel per bot',fmtE.format(c.doel_eur)],['Noodrem',fmtE.format(c.noodrem_eur)],['Max echt per bot',fmtE.format(c.max_echt_per_bot_eur)],['Max echt totaal',fmtE.format(c.max_echt_totaal_eur)],['Akkoord geldig',c.akkoord_geldig_sec+' s'],['Kosten (papier)',String(c.fee_pct).replace('.',',')+'%'],['Beurs',S.beurs],['Zone bij lijn',String(c.zone_pct).replace('.',',')+'%'],['Uitbraakbuffer',String(c.uitbraak_buffer_pct).replace('.',',')+'%'],['Stop voorbij lijn',String(c.stop_pct).replace('.',',')+'%'],['Min. range',String(c.min_range_pct).replace('.',',')+'%'],['Volume-eis',String(c.volume_factor).replace('.',',')+'×'],['EMA-filter',c.ema_filter?'aan':'uit']].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  const c=S.cfg;$('#cfg').innerHTML=[['Start per bot',fmtE.format(c.start_eur)],['Doel per bot',fmtE.format(c.doel_eur)],['Noodrem',fmtE.format(c.noodrem_eur)],['Max echt per bot',fmtE.format(c.max_echt_per_bot_eur)],['Max echt totaal',fmtE.format(c.max_echt_totaal_eur)],['Akkoord geldig',c.akkoord_geldig_sec+' s'],['Kosten (papier)',String(c.fee_pct).replace('.',',')+'%'],['Beurs',S.beurs],['Handelsstijl',S.hz.naam],['Risico per trade',String(S.settings.risico_pct).replace('.',',')+'%'],['Economie',S.settings.economie],['Min. koersbeweging',String(S.hz.min_range).replace('.',',')+'%'],['Volume-eis',String(c.volume_factor).replace('.',',')+'×'],['EMA-filter',c.ema_filter?'aan':'uit']].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
 }
 
 function light(b){
@@ -403,6 +488,98 @@ function renderPhone(){
   s.onload=()=>{try{new QRCode($('#qr'),{text:P.url,width:150,height:150});}catch(e){}};s.onerror=()=>{$('#qr').textContent='(QR-code niet beschikbaar: typ het adres over)';};
   document.head.appendChild(s);
 }
+// ---------- risico, handelsstijl, economie ----------
+let riskDrag=false;
+function renderRisk(){
+  const st=S.settings,r=st.risico_pct,per=S.cfg.start_eur*r/100;
+  if(!riskDrag){$('#risk').value=r;$('#riskval').textContent=String(r.toFixed(2)).replace('.',',')+'%';}
+  $('#risklbl').textContent=r<=0.5?'heel voorzichtig':r<=1?'voorzichtig':r<=2?'gemiddeld':r<=3.5?'verhoogd':'gedurfd';
+  $('#riskexpl').innerHTML=`Bij ${fmtE.format(S.cfg.start_eur)} per bot is het verlies per trade maximaal <b>${fmtE.format(per)}</b>, kosten inbegrepen. De bots kiezen de grootte van elke positie zo dat de stop precies dit bedrag kost.`;
+  document.querySelectorAll('#hz button').forEach(b=>b.classList.toggle('on',b.dataset.h===st.handelsstijl));
+  document.querySelectorAll('#macro button').forEach(b=>b.classList.toggle('on',b.dataset.x===st.economie));
+  $('#hzexpl').innerHTML=esc(S.hz.uitleg)+` Een trade kost 2 × ${String(S.cfg.fee_pct).replace('.',',')}% aan kosten, dus de bots zoeken bewegingen van minstens ${String(S.hz.min_range).replace('.',',')}%.`+(st.handelsstijl==='uur'?' <b>Let op:</b> bij uur-traden eten de kosten een groot deel van de winst op. De bots handelen dan weinig, en dat is bewust.':'');
+  $('#rules').innerHTML=S.rules.map(x=>`<li>${x}</li>`).join('');
+}
+$('#risk').addEventListener('input',e=>{riskDrag=true;$('#riskval').textContent=(+e.target.value).toFixed(2).replace('.',',')+'%';});
+$('#risk').addEventListener('change',async e=>{const r=await post('/api/settings',{risico_pct:+e.target.value});riskDrag=false;say(r);poll();});
+$('#hz').onclick=async e=>{const v=e.target.dataset.h;if(!v||!S||v===S.settings.handelsstijl)return;say(await post('/api/settings',{handelsstijl:v}));poll();loadLog();};
+$('#macro').onclick=async e=>{const v=e.target.dataset.x;if(!v||!S||v===S.settings.economie)return;say(await post('/api/settings',{economie:v}));poll();};
+
+// ---------- verdiend en marktkompas ----------
+function renderEarn(){
+  const V=S.verdiend;if(!V||!V.rows.length)return;
+  const eu=x=>(x>=0?'+':'−')+fmtE.format(Math.abs(x));
+  $('#earn').innerHTML=`<thead><tr><th class="l">Bot</th>${V.periods.map(p=>`<th>Afgelopen ${p}</th>`).join('')}</tr></thead><tbody>`+
+    V.rows.map(r=>`<tr class="${r.tot?'tot':''}"><td class="l">${r.kleur?`<span class="tag" style="background:${r.kleur}"></span>`:''}${esc(r.naam)}${r.echt&&!r.tot?' <span class="e">ECHT</span>':''}</td>`+
+      r.cells.map(c=>`<td class="mono ${c.full?'':'part'}"><span class="${cls(c.d)}">${eu(c.d)}</span><small>${pct(c.r)}${c.full?'':' *'}</small></td>`).join('')+'</tr>').join('')+'</tbody>';
+  const el=V.elapsed,d=el<3600?Math.round(el/60)+' min':el<86400?(el/3600).toFixed(1).replace('.',',')+' uur':(el/86400).toFixed(1).replace('.',',')+' dagen';
+  $('#earnnote').textContent=`bots draaien ${d}`+(V.rows[0].cells.some(c=>!c.full)?' · * nog geen volle periode: bedrag sinds de start':'');
+}
+function renderKompas(){
+  const K=S.kompas;if(!K||!K.items)return;
+  const room=(n,v,c)=>`<span>${n}</span><span class="bar"><i style="width:${v*100}%;background:${c}"></i></span><b class="mono">${v>=1?'volle inzet':v>0?Math.round(v*100)+'% inzet':'geen'}</b>`;
+  $('#kompas').innerHTML=K.items.map(([t,v,e])=>`<div class="r"><div class="t">${esc(t)}</div><div class="v">${esc(v)}</div><div class="ef ${e?'':'none'}">${e?'→ '+esc(e):'→ geen invloed'}</div></div>`).join('')+
+    `<div class="r"><div class="t">Resultaat voor de bots</div><div class="room">${room('Kopen (long)',K.long,'#22c55e')}${room('Shorten',K.short,'#ef4444')}</div></div>`;
+}
+
+// ---------- details bij klikken ----------
+function modal(title,html){$('#mtitle').textContent=title;$('#mbody').innerHTML=html;$('#modal').classList.add('on');}
+$('#mclose').onclick=()=>$('#modal').classList.remove('on');
+$('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').classList.remove('on');};
+const dl=rows=>`<dl class="det">${rows.filter(r=>r[1]!==''&&r[1]!=null).map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>`;
+function tradeDetail(x){
+  modal(`${x.naam} · ${x.actie}`,dl([['Tijd',new Date(x.t*1000).toLocaleString('nl-NL')],['Geld',x.echt?'<b class="down">ECHT</b>':'papier (nep-geld)'],
+    ['Koers',x.p?fmtE.format(x.p):''],['Aantal BTC',x.qty!=null?fmtQ.format(x.qty):''],['Bedrag',x.quote!=null?fmtE.format(x.quote):''],
+    ['Kosten',x.fee!=null?fmtE.format(x.fee):''],['Resultaat',x.pnl!=null?`<b class="${cls(x.pnl)}">${f2(x.pnl)} €</b>`+(x.ret!=null?` (${pct(x.ret)})`:''):''],
+    ['Waarom',esc(x.why)],['Order-ID',x.order?`<span class="mono">${esc(x.order)}</span>`:'']]));
+}
+function logDetail(r){
+  modal(`${r.bot} · ${r.actie}`,dl([['Tijd',esc(r.datum_tijd)],['Geld',r.modus==='echt'?'<b class="down">ECHT</b>':'papier (nep-geld)'],['Koers',r.koers_eur?'€ '+esc(r.koers_eur):''],
+    ['Aantal BTC',esc(r.aantal_btc)],['Bedrag',r.bedrag_eur?'€ '+esc(r.bedrag_eur):''],['Kosten',r.kosten_eur?'€ '+esc(r.kosten_eur):''],
+    ['Resultaat',r.resultaat_eur?'€ '+esc(r.resultaat_eur):''],['Toelichting',esc(r.toelichting)],['Order-ID',r.order_id?`<span class="mono">${esc(r.order_id)}</span>`:'']]));
+}
+function botDetail(id){
+  const b=S.bots.find(x=>x.id===id);if(!b)return;const P=b.pos;
+  const rows=LOG.filter(r=>r.bot===b.naam).slice(0,40);
+  modal(`${b.naam}${b.live?' · ECHT':' · papier'}`,dl([['Wat hij doet',esc(b.uitleg)],['Vermogen',fmtE.format(b.e)+` (${pct(b.e/b.start-1)} sinds start)`],['Status',b.status],
+    ['Nu',esc(b.thought)],['Positie',P?`${P.side===1?'Long':'Short'} @ ${fmtP.format(P.entry)} · doel ${fmtP.format(P.tp)} · stop ${fmtP.format(P.sl)} · nu <b class="${cls(P.r)}">${pct(P.r)}</b>`+(P.risk?` · max verlies ${fmtE.format(P.risk)}`:'')+(P.t?` · sinds ${new Date(P.t*1000).toLocaleString('nl-NL')}`:''):'geen'],
+    ['Trades',`${b.n} geopend, ${b.closed} gesloten, ${b.closed?Math.round(b.wins/b.closed*100):0}% winst`],['Max daling',(b.maxdd*100).toFixed(1).replace('.',',')+'%']])+
+    `<h3 style="margin-top:14px;font-size:13px">Laatste acties in het logboek</h3>`+(rows.length?`<div class="tw"><table class="tb"><tbody>${rows.map(r=>`<tr><td class="l mono muted">${esc(r.datum_tijd.slice(5,16))}</td><td class="l">${esc(r.actie)}${r.modus==='echt'?' <span class="e">ECHT</span>':''}<small>${esc(r.toelichting)}</small></td><td>${r.resultaat_eur?esc(r.resultaat_eur):''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">Nog niets.</p>'));
+}
+
+// ---------- logboek ----------
+let LOG=[];
+async function loadLog(){try{const r=await fetch('/api/logboek?n=1000',{cache:'no-store'});if(!r.ok)return;LOG=(await r.json()).rows||[];renderLog();}catch(e){}}
+function renderLog(){
+  const bots=[...new Set(LOG.map(r=>r.bot))].sort(),sel=$('#lfbot'),cur=sel.value;
+  if(sel.options.length-1!==bots.length){sel.innerHTML='<option value="">Alle bots</option>'+bots.map(b=>`<option>${esc(b)}</option>`).join('');sel.value=cur;}
+  const fm=$('#lfmodus').value,fb=$('#lfbot').value,fs=$('#lfsoort').value;
+  const soort=r=>/^(Open|Sluit)/.test(r.actie)?'trade':/^(Voorstel|Order)/.test(r.actie)?'voorstel':r.bot==='Systeem'?'systeem':'overig';
+  const rows=LOG.filter(r=>(!fm||r.modus===fm)&&(!fb||r.bot===fb)&&(!fs||soort(r)===fs)).slice(0,400);
+  $('#logtab').innerHTML=`<thead><tr><th class="l">Tijd</th><th class="l">Bot</th><th class="l">Actie</th><th>Koers</th><th>BTC</th><th>Bedrag</th><th>Kosten</th><th>Resultaat</th></tr></thead><tbody>`+
+    (rows.length?rows.map(r=>`<tr data-log="${LOG.indexOf(r)}"><td class="l mono muted">${esc(r.datum_tijd)}</td><td class="l">${esc(r.bot)}</td><td class="l">${esc(r.actie)}${r.modus==='echt'?' <span class="e">ECHT</span>':''}<small>${esc(r.toelichting.slice(0,110))}</small></td><td class="mono">${esc(r.koers_eur)}</td><td class="mono">${esc(r.aantal_btc)}</td><td class="mono">${esc(r.bedrag_eur)}</td><td class="mono">${esc(r.kosten_eur)}</td><td class="mono ${r.resultaat_eur?(r.resultaat_eur.startsWith('-')?'down':'up'):''}">${esc(r.resultaat_eur)}</td></tr>`).join(''):'<tr><td class="l muted" colspan="8">Nog geen regels voor dit filter.</td></tr>')+'</tbody>';
+}
+['#lfmodus','#lfbot','#lfsoort'].forEach(id=>$(id).addEventListener('change',renderLog));
+
+// ---------- belasting ----------
+async function loadTax(){try{const r=await fetch('/api/belasting',{cache:'no-store'});if(!r.ok)return;renderTax(await r.json());}catch(e){}}
+function renderTax(T){
+  const nu=new Date().getFullYear(),eu=x=>fmtE.format(x||0);
+  const jaren=T.jaren.length?T.jaren:[{jaar:String(nu),aankopen:0,verkopen:0,gekocht_eur:0,verkocht_eur:0,kosten_eur:0,resultaat_eur:0}];
+  $('#taxbody').innerHTML=`<div class="tw"><table class="tb" style="min-width:680px"><thead><tr><th class="l">Jaar</th><th class="l">Peildatum 1 januari (box 3)</th><th>Echte trades</th><th>Kosten</th><th>Gerealiseerd resultaat</th><th></th></tr></thead><tbody>`+
+    jaren.map(y=>{const p=y.peildatum;
+      const pd=p?`${(p.btc||0).toFixed(8).replace('.',',')} BTC + ${eu(p.eur)} op ${esc(p.beurs)}`+(p.waarde_btc!=null?`<small>BTC-waarde ${eu(p.waarde_btc)} (koers ${fmtP.format(p.koers)}, ${esc(p.bron_koers)})</small>`:'<small>koers op 1 januari niet beschikbaar: gebruik het jaaroverzicht van je beurs</small>')+`<small>${esc(p.methode)}</small>`
+        :(T.keys?'<span class="muted">wordt vastgelegd zodra Botlab in dit jaar draait</span>':'<span class="muted">alleen met een API-sleutel</span>');
+      return `<tr><td class="l"><b>${esc(y.jaar)}</b></td><td class="l">${pd}</td><td>${y.aankopen} aan · ${y.verkopen} ver<small>${eu(y.gekocht_eur)} / ${eu(y.verkocht_eur)}</small></td><td class="mono">${eu(y.kosten_eur)}</td><td class="mono ${cls(y.resultaat_eur)}">${(y.resultaat_eur>=0?'+':'−')+eu(Math.abs(y.resultaat_eur))}</td><td><a class="btn" href="/api/belasting.csv?jaar=${encodeURIComponent(y.jaar)}" download>⬇️ ${esc(y.jaar)}</a></td></tr>`;}).join('')+'</tbody></table></div>'+
+  `<p><b>Zo gebruik je dit:</b></p><ul>
+    <li><b>Box 3 (meestal):</b> crypto geef je aan als <i>overige bezitting</i> met de waarde op <b>1 januari om 00:00</b> (de peildatum), tegen de koers van je beurs. Je betaalt dan geen belasting over de winst van losse trades, maar over een vast verondersteld rendement op je totale vermogen boven het heffingsvrije vermogen. Botlab legt de stand op 1 januari vast in de kolom hierboven. Controleer die altijd met het jaaroverzicht van je beurs, want stortingen en opnames buiten Botlab telt het programma niet mee.</li>
+    <li><b>Box 1 (mogelijk):</b> handelt een bot heel actief en structureel, dan kan de Belastingdienst de winst zien als <i>resultaat uit overige werkzaamheden</i>, met een tarief tot 49,5%. Rechters oordelen hier verschillend over. Twijfel je, vraag dan een belastingadviseur. De kolom "gerealiseerd resultaat" en de download geven je de cijfers daarvoor.</li>
+    <li><b>De beurs geeft door:</b> sinds 1 januari 2026 moeten beurzen zoals Bitvavo en Kraken je transacties aan de Belastingdienst melden (Europese regel DAC8). De eerste melding over 2026 volgt begin 2027. Zorg dat je aangifte overeenkomt met wat je beurs meldt.</li>
+    <li><b>Vanaf 2028 (gepland):</b> een nieuw box 3-stelsel met belasting over het <i>werkelijke</i> rendement. Dan heb je ook de waarde op 31 december en alle transacties nodig. Het logboek en de download bewaren die al voor je. De wet ligt nog bij de Eerste Kamer en kan nog veranderen.</li>
+    <li>Bewaar elk jaar de download en het jaaroverzicht van je beurs bij je administratie.</li></ul>
+  <p class="muted">Dit is een hulpmiddel, geen belastingadvies. Kijk voor je eigen situatie op <a href="https://www.belastingdienst.nl/wps/wcm/connect/nl/werk-en-inkomen/content/cryptovaluta" target="_blank" rel="noopener">belastingdienst.nl (crypto)</a> of vraag een belastingadviseur. Papiertrades (nep-geld) tellen nergens mee.</p>`;
+}
+
 // ---------- meldingen ----------
 let actx=null;
 function beep(){try{if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=880;g.gain.value=.08;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.25);}catch(e){}}
@@ -410,6 +587,12 @@ function alertUser(p){beep();try{if(window.Notification&&Notification.permission
 $('#notif').onclick=async()=>{try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}try{if(window.Notification){const r=await Notification.requestPermission();toast(r==='granted'?'Meldingen staan aan':'Meldingen geweigerd: je hoort wel een piep');}}catch(e){}beep();};
 
 // ---------- knoppen ----------
+document.addEventListener('click',e=>{
+  if(!S)return;
+  const tr=e.target.closest('[data-trade]');if(tr){const x=S.trades[+tr.dataset.trade];if(x)tradeDetail(x);return;}
+  const lg=e.target.closest('[data-log]');if(lg){const x=LOG[+lg.dataset.log];if(x)logDetail(x);return;}
+  const bt=e.target.closest('[data-bot]');if(bt&&!e.target.closest('button')){botDetail(bt.dataset.bot);return;}
+});
 document.addEventListener('click',async e=>{
   const a=e.target.dataset.a,r=e.target.dataset.r;
   if(a){e.target.disabled=true;e.target.textContent='Bezig…';say(await post('/api/approve',{id:a}));lastPend='';poll();}
@@ -428,6 +611,7 @@ async function poll(){
   catch(e){$('#cdot').className='dot err';$('#ctext').textContent='Botlab-programma niet bereikbaar';}
 }
 setInterval(poll,1500);poll();
+loadLog();setInterval(loadLog,10000);loadTax();setInterval(loadTax,60000);
 setInterval(()=>{if(S)renderProps();},1000);
 </script>
 </body>

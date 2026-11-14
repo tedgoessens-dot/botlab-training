@@ -1,5 +1,6 @@
-BOTLAB 2 – daytrade-bots op steun & weerstand (Kraken of Bitvavo, Windows)
+BOTLAB 2 – tradingbots op steun & weerstand (Kraken of Bitvavo, Windows)
 =========================================================================
+Opdracht van de bots: handelen met zo weinig mogelijk risico.
 
 WAT HET DOET
 - Live BTC-EUR-koersen van Kraken of Bitvavo.
@@ -35,15 +36,32 @@ WAT HET DOET
    "beurs" op "kraken" of "bitvavo". Opslaan en Botlab herstarten.
 
 4. API-SLEUTEL (pas na een paar weken papier)
+   Je logt niet in met je wachtwoord: Botlab gebruikt een API-sleutel.
+   Deel die met niemand, ook niet in een chat of e-mail.
+
+   BITVAVO (kan alleen via de website, niet via de app):
+     a. Zet eerst tweestapsverificatie (2FA) aan: bitvavo.com > je naam
+        rechtsboven > Beveiliging.
+     b. Ga naar je naam rechtsboven > Instellingen > tabblad API
+        (direct: https://account.bitvavo.com/user/api).
+     c. Klik op "Nieuwe API-sleutel" en geef hem een naam, bijv. Botlab.
+     d. Rechten: alleen "Bekijken" en "Handelen". NOOIT "Opnemen".
+     e. IP-whitelist: vul het IP-adres in van de pc of server waarop Botlab
+        draait (zoek "wat is mijn ip" op die pc).
+     f. Je krijgt een API-sleutel en een geheim. Het geheim zie je maar één
+        keer: zet het meteen in botlab_config.json.
+     g. Bevestig de nieuwe sleutel via de e-mail van Bitvavo. Zonder die
+        bevestiging werkt hij niet.
+     h. Zet in botlab_config.json ook "beurs": "bitvavo" en "fee_pct": 0.25.
+
    KRAKEN: Instellingen > API > nieuwe sleutel. Rechten:
      - Funds: Query
      - Orders and trades: Query open orders & trades, Query closed orders &
        trades, Create & modify orders
      - NOOIT "Withdraw funds". Zet ook een IP-whitelist.
-   BITVAVO: Instellingen > API > nieuwe sleutel met alleen "Bekijken" en
-     "Handelen", NOOIT "Opnemen". IP-whitelist aan.
-   Plak sleutel en geheim in botlab_config.json bij "api_key" en "api_secret".
-   Deel ze met niemand, ook niet in een chat. Herstart Botlab.
+
+   Plak sleutel en geheim in botlab_config.json bij "api_key" en "api_secret"
+   en herstart Botlab. Het bestand botlab_config.json komt nooit op GitHub.
 
 5. ECHT HANDELEN AANZETTEN
    - Klik "Test verbinding". Je ziet je saldo. Bij Kraken wordt ook een
@@ -51,18 +69,56 @@ WAT HET DOET
    - Zorg voor minimaal 100 euro op de beurs (2 long-bots x 50 euro).
    - Typ ECHT en klik "Echt handelen aanzetten".
 
-6. INSTELLINGEN (botlab_config.json)
-   zone_pct             "net boven steun / net onder weerstand": binnen 0,30%
-   uitbraak_buffer_pct  15m-slot moet 0,20% voorbij de lijn liggen
-   stop_pct             stop 0,40% aan de verkeerde kant van de lijn
-   min_range_pct        steun en weerstand minstens 1,2% uit elkaar (kosten!)
+6. RISICO, HANDELSSTIJL EN ECONOMIE (in het dashboard bovenaan)
+   - Risico per trade (schuif 0,25% - 5%): elke trade heeft vooraf een stop.
+     De bot kiest de grootte zo dat de stop, inclusief kosten, precies dit
+     percentage van de bot kost. Ook echte orders worden zo berekend.
+     Komt een echte order onder het minimum van de beurs (Bitvavo € 5), dan
+     slaat de bot hem over.
+   - Handelsstijl uur / dag / week / maand: de bots kijken naar andere
+     candles en passen zone, stop en minimale koersbeweging aan.
+     Wijzigen kan alleen als er geen echte positie of voorstel openstaat.
+   - Economie gunstig / neutraal / ongunstig: jouw eigen inschatting.
+   - Marktkompas: hogere trend, de 4-jarige Bitcoin-cyclus (halvering),
+     jouw economie-keuze en de angst-en-hebzuchtindex (alternative.me)
+     bepalen per richting volle inzet, halve inzet of geen trade.
+   Veiligheidsregels: winst/risico na kosten minstens 1,5x tot 2,5x, niet
+   tegen de trend in, pauze na 2 verliezen op rij, verlieslimiet per
+   dag/week/maand (3x risico), bot stopt na 10x risico daling vanaf zijn top,
+   geen hefboom.
+
+   Overige instellingen (botlab_config.json)
+   risico_pct / handelsstijl / economie   startwaarden van de schuiven hierboven
    volume_factor        uitbraak-candle moet 1,5x gemiddeld volume hebben
    ema_filter           true = alleen handelen mee met de EMA-trend
-   fee_pct              kosten per trade in papiermodus (Kraken Pro 0,40%,
+   fee_pct              kosten per order (ook voor de risicoberekening) (Kraken Pro 0,40%,
                         Bitvavo ca. 0,25%)
    max_echt_per_bot_eur / max_echt_totaal_eur   harde grenzen echt geld
 
-7. OP JE IPHONE (als app)
+7. LOGBOEK, DETAILS EN VERDIEND
+   - Tik op een bot of op een trade voor alle details: koers, aantal BTC,
+     bedrag, kosten, resultaat, reden en order-ID.
+   - Alles wat er gebeurt komt in botlab_logboek.csv (opent in Excel):
+     voorstellen, akkoord, afwijzingen, echte en papieren trades, mislukte
+     orders, instellingen en noodstop. Ook te downloaden in het dashboard.
+   - "Verdiend" toont winst of verlies van het afgelopen uur, de afgelopen
+     dag, week, maand en het afgelopen jaar, per bot en alle bots samen.
+
+8. BELASTING (Nederland) – hulpmiddel, geen belastingadvies
+   - Botlab legt met een API-sleutel per jaar de stand op 1 januari 00:00
+     vast (peildatum box 3) in botlab_belasting.json. Draaide Botlab toen
+     niet, dan rekent hij de stand terug met de echte trades; stortingen en
+     opnames buiten Botlab telt hij niet mee. Controleer altijd met het
+     jaaroverzicht van je beurs.
+   - De belastingkaart toont per jaar de echte trades, kosten en het
+     gerealiseerde resultaat, met een download (CSV) voor je administratie.
+   - Box 3: crypto = overige bezitting, waarde op 1 januari.
+     Box 1 kan bij zeer actief handelen met een bot: vraag bij twijfel een
+     belastingadviseur. Sinds 2026 melden beurzen je transacties aan de
+     Belastingdienst (DAC8). Vanaf 2028 is belasting over het werkelijke
+     rendement gepland (nog niet definitief).
+
+9. OP JE IPHONE (als app)
    Botlab draait op je pc. Je iPhone opent het dashboard van de pc.
    a. Zet in botlab_config.json  "telefoon_toegang": true  en herstart.
       Windows vraagt om toegang voor Python: kies "Privenetwerken" en klik Toestaan.

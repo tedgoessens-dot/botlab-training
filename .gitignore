@@ -22,5 +22,8 @@ node_modules/
 # Botlab2: eigen config (API-sleutels, pincode) en stand blijven altijd lokaal
 botlab_config.json
 botlab_state.json
+botlab_logboek.csv
+botlab_belasting.json
+botlab_sessies.json
 *.tmp
 __pycache__/

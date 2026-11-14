@@ -81,6 +81,11 @@ In de map [`botlab2/`](botlab2/) staat het volledige Botlab-programma voor je Wi
 - Start met `start_botlab.bat` (Python nodig). Het dashboard opent op http://127.0.0.1:8765.
 - Je API-sleutels zet je alleen in `botlab_config.json` op je eigen pc of server. Dat bestand staat in `.gitignore` en komt dus **nooit** in deze repository, net als `botlab_state.json`.
 - Het dashboard in deze map werkt alleen samen met `botlab.py`, niet via GitHub Pages.
+- Botlab2 heeft dezelfde risico-opdracht als Botlab Training: een risico-schuif, de handelsstijl uur/dag/week/maand, het marktkompas, de veiligheidsregels en het overzicht Verdiend. Ook echte orders worden op het gekozen risico berekend, en elke order vraagt jouw akkoord.
+- **Logboek:** alles wat er gebeurt, komt in `botlab_logboek.csv` (opent in Excel). Je kunt het filteren en downloaden in het dashboard. Tik op een bot of trade voor alle details.
+- **Belasting (NL):** per jaar de stand op 1 januari (box 3) en een overzicht van je echte trades, met een download voor je administratie. Dit is geen belastingadvies.
+- Je persoonlijke bestanden (`botlab_config.json`, `botlab_state.json`, `botlab_logboek.csv`, `botlab_belasting.json`, `botlab_sessies.json`) staan in `.gitignore` en komen dus **nooit** in deze repository.
+- **Bitvavo API-sleutel maken:** zie stap 4 in [`botlab2/LEESMIJ.txt`](botlab2/LEESMIJ.txt).
 
 
 ---
