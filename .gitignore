@@ -1,0 +1,20 @@
+# Geheimen: nooit in de repository
+.env
+.env.*
+*.key
+*.pem
+*secret*
+*secrets*
+api-keys*
+apikeys*
+keys.json
+config.local.*
+
+# Systeembestanden
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Afhankelijkheden en logbestanden
+node_modules/
+*.log

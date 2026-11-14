@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Botlab Training</title>
+<meta name="description" content="Botlab Training: crypto-tradingbots oefenen met live BTC-koersen en nep-geld. Geen account, geen API-sleutels, geen echte orders.">
+<meta name="theme-color" content="#0a0e16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Botlab">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--buy:#dc2626;--sell:#16a34a;--bg:#0a0e16;--panel:#111725;--panel2:#151d2d;--line:#222b3d;--text:#e7ecf6;--muted:#8792a8;--up:#22c55e;--down:#ef4444;--org:#ea580c}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.4}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.down{color:var(--down)}.muted{color:var(--muted)}
+header{position:sticky;top:0;z-index:10;background:rgba(10,14,22,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:9px 14px;padding-top:max(9px,env(safe-area-inset-top));display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.brand h1{font-size:17px;margin:0;font-weight:800}
+.badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid #7c5a12;color:#fcd34d;background:#2a1f08;letter-spacing:.05em}
+.conn{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);letter-spacing:.04em}
+.conn.live{border-color:#166534;color:#86efac;background:#08200f}
+.conn.bezig{border-color:#7c5a12;color:#fcd34d}
+.conn.weg{border-color:#7f1d1d;color:#fca5a5;background:#200808}
+.clock{font-size:11.5px;color:var(--muted)}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-size:12.5px;font-weight:600;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:7px 11px;cursor:pointer}
+button:disabled{opacity:.5}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;padding:6px 9px}
+.seg button.on{background:#0e2a3d;color:#bfe8ff}
+body.live #speed,body.live #pause,body.live #newmkt{display:none}
+.sig{border:0;color:#fff;font-weight:800;letter-spacing:.06em;font-size:13px;border-radius:10px;padding:8px 13px;display:inline-flex;gap:7px;align-items:center}
+.sig small{font-weight:600;letter-spacing:0;opacity:.85;font-size:11px}
+.kopen{background:var(--buy)!important;color:#fff!important}.houden{background:var(--org)!important;color:#fff!important}.verkopen{background:var(--sell)!important;color:#fff!important}
+body.std{--buy:#16a34a;--sell:#dc2626}.wacht{background:#334155!important;color:#cbd5e1!important}
+main{padding:12px 14px 50px;padding-bottom:max(50px,env(safe-area-inset-bottom));max-width:1400px;margin:0 auto;display:grid;gap:12px;grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px;min-width:0}
+.card h2{font-size:12.5px;margin:0 0 10px;font-weight:600;color:#c4cee2;text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.span2{grid-column:1/-1}
+.banner{grid-column:1/-1;font-size:12.5px;color:#d9c48a;background:#1e1709;border:1px solid #4a3a12;border-radius:10px;padding:8px 12px}
+body.live .banner{color:#bfe3c9;background:#0a1a10;border-color:#1f5131}
+#loading{grid-column:1/-1;display:none;text-align:center;padding:40px 14px;color:var(--muted)}
+body.wachten #loading{display:block}
+body.wachten main>section{display:none}
+#sigwhy{display:none}#sigwhy.on{display:block}
+body.wachten #sigwhy.on{display:none}
+.why3{margin:0;padding-left:18px;font-size:13px}
+#approvals{display:none;border-color:#b45309;background:#1c1406}
+#approvals h2{color:#fcd34d}
+.prop{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#0f1522;border:1px solid #3d2e0e;border-left:4px solid var(--c);border-radius:10px;padding:11px 12px;margin-top:8px}
+.prop .what{font-size:15px;font-weight:700}.prop .why{font-size:12.5px;color:#c8d1e3;margin-top:3px}.prop .meta{font-size:12px;color:var(--muted);margin-top:4px}
+.prop .btns{display:flex;gap:8px;flex-wrap:wrap}.prop .btns button{padding:11px 16px;font-size:14.5px;min-height:46px;border:0}
+.pricebar{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-bottom:6px}
+.price{font-size:26px;font-weight:600}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0}
+.legend i{width:12px;height:3px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:middle}
+canvas{display:block;width:100%}
+#cv-price{height:340px}#cv-eq{height:240px}
+.trends{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tile{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.tile .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between}
+.tile .val{font-size:16px;font-weight:600;margin-top:2px}.tile .st{font-size:11.5px}
+.tile canvas{height:28px;margin-top:4px}
+.emas{display:grid;grid-template-columns:auto repeat(3,1fr);gap:4px 10px;font-size:12.5px;margin-top:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.bots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.bot{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:11px;border-top:3px solid var(--c)}
+.bot .top{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.bot .nm{font-weight:700;display:flex;align-items:center;gap:7px}.bot .nm i{width:9px;height:9px;border-radius:50%;background:var(--c);flex:0 0 auto}
+.pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:#1d263a;color:#b7c3db;white-space:nowrap}
+.pill.p{background:#2a1f08;color:#fcd34d}
+.bot .eq{font-size:21px;font-weight:600;margin-top:6px}.bot .ret{font-size:12.5px;font-weight:600}
+.track{position:relative;height:8px;background:#0c1220;border-radius:5px;margin:9px 0 3px;border:1px solid var(--line)}
+.track .fill{position:absolute;top:0;bottom:0;border-radius:5px}.track .mid{position:absolute;top:-3px;bottom:-3px;width:2px;background:#5b6780}
+.tracklbl{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;font-size:10.5px;color:var(--muted)}
+.stats b{display:block;color:var(--text);font-size:12.5px;font-weight:600}
+.posline{margin-top:8px;font-size:11.5px;min-height:16px}
+.light{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.05em;border-radius:8px;padding:4px 9px;margin-top:8px}
+.thought{margin-top:6px;font-size:11.5px;color:#aeb9cf;background:#0d1320;border:1px dashed #2a3550;border-radius:8px;padding:7px 8px;min-height:44px}
+.how{font-size:11px;color:var(--muted);margin-top:4px}
+.lvls{list-style:none;margin:0;padding:0;font-size:12.5px}
+.lvls li{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;padding:6px 2px;border-bottom:1px solid #1a2233;align-items:center}
+.k{font-size:10px;font-weight:800;border-radius:5px;padding:1px 6px;color:#fff}.k.steun{background:#166534}.k.weerstand{background:#991b1b}
+.feed{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto;font-size:12px}
+.feed li{display:grid;grid-template-columns:60px 1fr auto;gap:8px;padding:7px 2px;border-bottom:1px solid #1a2233;align-items:start}
+.feed .why{grid-column:2/4;color:var(--muted);font-size:11.5px;margin-top:-4px}
+.tag{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.set{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px}
+.set label{font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.set input[type=number]{font:inherit;font-family:'JetBrains Mono',monospace;background:#0c1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 8px;width:100%}
+.tg{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px}
+.tg input{width:18px;height:18px}
+ol.steps{margin:0;padding-left:18px;font-size:12.5px;color:#c3cde0}ol.steps li{margin-bottom:6px}
+#toast{visibility:hidden;position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(120px);background:#13233a;border:1px solid #2b4a70;color:#dbeafe;padding:10px 16px;border-radius:12px;font-weight:600;font-size:13px;transition:transform .3s;z-index:20;max-width:92vw;text-align:center}
+#toast.show{visibility:visible;transform:translateX(-50%) translateY(0)}
+@media (max-width:1250px){.bots{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:900px){main{grid-template-columns:minmax(0,1fr);padding:10px}.span2{grid-column:auto}.bots{grid-template-columns:repeat(2,minmax(0,1fr))}#cv-price{height:280px}.prop{grid-template-columns:1fr}}
+@media (max-width:520px){.bots{grid-template-columns:minmax(0,1fr)}header{padding:8px 10px}.price{font-size:22px}}
+</style>
+</head>
+<body>
+<header id="hdr">
+  <div class="brand">
+    <h1>⚡ Botlab Training</h1><span class="badge">PAPIER · NEP-GELD</span><span class="conn" id="conn"></span>
+    <button class="sig wacht" id="sigbtn">● <span id="sigtxt">WACHT</span> <small>laag · stabiel · hoog</small></button>
+    <span class="clock mono" id="clock"></span>
+  </div>
+  <div class="controls">
+    <div class="seg" id="mode"><button data-m="live">Live</button><button data-m="sim">Oefenmarkt</button></div>
+    <div class="seg" id="speed"><button data-s="1">1×</button><button data-s="60">1 min/s</button><button data-s="600">10 min/s</button><button data-s="3600">1 uur/s</button></div>
+    <button id="pause">⏸</button>
+    <button id="restart">↺ Bots</button>
+    <button id="newmkt">🎲 Markt</button>
+  </div>
+</header>
+
+<main>
+  <div class="banner" id="banner"></div>
+  <div id="loading"><div style="font-size:15px;color:var(--text);font-weight:600">Live koersen laden…</div><div id="loadmsg" style="margin-top:6px">Verbinden met Kraken (BTC/EUR).</div><div style="margin-top:14px"><button id="tosim">Ga naar de oefenmarkt</button></div></div>
+
+  <section class="card span2" id="sigwhy">
+    <h2><span>Waarom dit signaal</span><span class="muted" id="sigkey" style="text-transform:none;letter-spacing:0"></span></h2>
+    <ul class="why3" id="sigwhyl"></ul>
+  </section>
+
+  <section class="card span2" id="approvals">
+    <h2><span>⏳ Jouw akkoord nodig</span><span class="muted" style="text-transform:none;letter-spacing:0">de bot wacht op jou</span></h2>
+    <div id="props"></div>
+  </section>
+
+  <section class="card span2">
+    <h2><span>Bots</span><span class="muted mono" id="totals" style="text-transform:none;letter-spacing:0"></span></h2>
+    <div class="bots" id="bots"></div>
+  </section>
+
+  <section class="card">
+    <h2><span>BTC-EUR <span class="muted" id="srclbl" style="text-transform:none;letter-spacing:0"></span></span>
+      <div class="seg" id="tf"><button data-tf="1m">1m</button><button data-tf="5m">5m</button><button data-tf="15m">15m</button><button data-tf="1u">1u</button><button data-tf="1d">1d</button></div></h2>
+    <div class="pricebar"><span class="price mono" id="price">–</span><span class="mono" id="chg24"></span>
+      <span class="legend"><span><i style="background:#22d3ee"></i>9 EMA</span><span><i style="background:#c084fc"></i>20 EMA</span><span><i style="background:#e5e7eb"></i>200 EMA</span><span><i style="background:#22c55e"></i>steun</span><span><i style="background:#ef4444"></i>weerstand</span><span>▲▼ open · ○ sluit</span></span></div>
+    <canvas id="cv-price"></canvas>
+  </section>
+
+  <section class="card">
+    <h2><span>Trend per tijdschaal</span></h2>
+    <div class="trends" id="trends"></div>
+    <div class="emas mono" id="emas"></div>
+  </section>
+
+  <section class="card">
+    <h2><span>Steun &amp; weerstand</span><span class="muted" style="text-transform:none;letter-spacing:0">swing-toppen en -bodems (1u + 15m)</span></h2>
+    <ul class="lvls" id="lvls"></ul>
+  </section>
+
+  <section class="card">
+    <h2><span>Vermogen per bot</span><span class="legend" id="eqlegend"></span></h2>
+    <canvas id="cv-eq"></canvas>
+  </section>
+
+  <section class="card">
+    <h2><span>Trades</span><span class="muted mono" id="ntr" style="text-transform:none;letter-spacing:0"></span></h2>
+    <ul class="feed" id="feed"></ul>
+  </section>
+
+  <section class="card">
+    <h2><span>Instellingen</span></h2>
+    <div class="set">
+      <label>Start per bot (€)<input id="s-start" type="number" value="50" min="10" step="5"></label>
+      <label>Doel per bot (€)<input id="s-doel" type="number" value="75" min="11" step="5"></label>
+      <label>Noodrem (€)<input id="s-rem" type="number" value="35" min="1" step="5"></label>
+      <label>Kosten per trade (%)<input id="s-fee" type="number" value="0.25" min="0" step="0.05"></label>
+      <label>Zone bij lijn (%)<input id="s-zone" type="number" value="0.30" min="0.05" step="0.05"></label>
+      <label>Uitbraakbuffer (%)<input id="s-buf" type="number" value="0.20" min="0" step="0.05"></label>
+    </div>
+    <label class="tg"><input type="checkbox" id="s-ema" checked> EMA-filter: alleen mee met de trend (200 EMA) en het momentum (9/20 EMA)</label>
+    <label class="tg"><input type="checkbox" id="s-ask"> Vraag mijn akkoord bij elke koop en verkoop</label>
+    <div class="lbl" style="font-size:11.5px;color:var(--muted);margin-top:12px">Kleuren van de knoppen</div>
+    <label class="tg"><input type="radio" name="kl" value="mijn" checked> Mijn schema: <b style="color:#ef4444">kopen rood</b> · <b style="color:#f97316">houden oranje</b> · <b style="color:#22c55e">verkopen groen</b></label>
+    <label class="tg"><input type="radio" name="kl" value="std"> Beurs-standaard (Kraken/Bitvavo): kopen groen · verkopen rood</label>
+    <div style="margin-top:10px"><button id="apply">Toepassen &amp; bots herstarten</button></div>
+  </section>
+
+  <section class="card">
+    <h2><span>Zo werkt Botlab Training</span></h2>
+    <ol class="steps">
+      <li><b>Live</b>: de koers komt rechtstreeks van de openbare koersfeed van Kraken (BTC/EUR). Geen account, geen API-sleutel, geen server: alles draait in je browser. De bots lopen alleen zolang deze pagina open is.</li>
+      <li><b>Oefenmarkt</b>: een gesimuleerde koers die je kunt versnellen, om in korte tijd veel trades te zien.</li>
+      <li><b>Steunkoper</b> koopt net boven een steunlijn (binnen de zone) en verkoopt net onder de weerstand. Stop net onder de steun.</li>
+      <li><b>Weerstandverkoper</b> shortt net onder een weerstand en sluit net boven de steun.</li>
+      <li><b>Uitbraak omhoog / omlaag</b> handelen pas als een 15m-candle met 1,5× volume door de lijn sluit.</li>
+      <li><b>EMA</b>: 9 en 20 EMA (1m, 5m) voor momentum, 200 EMA (5m) voor de intraday-trend.</li>
+      <li><b>Toeval</b> is de controlegroep. Een goede bot moet hem verslaan.</li>
+      <li>Alle trades zijn op papier met nep-geld. Er gaan nooit echte orders uit. Geen financieel advies.</li>
+    </ol>
+  </section>
+</main>
+<div id="toast"></div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const YEAR=31536000,DAY=86400,HOUR=3600,VOL=0.65,SIG_S=VOL/Math.sqrt(YEAR),SECN=7200;
+const WS_URL='wss://ws.kraken.com/v2',SYM='BTC/EUR';
+const fmtE=new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'});
+const fmtP=new Intl.NumberFormat('nl-NL',{maximumFractionDigits:0});
+const nl=(x,d=2)=>x.toFixed(d).replace('.',',');
+const pct=(x,d=2)=>(x>=0?'+':'−')+Math.abs(x*100).toFixed(d).replace('.',',')+'%';
+const cls=x=>x>0?'up':x<0?'down':'muted';
+const fP=v=>v==null||!isFinite(v)?'–':fmtP.format(v);
+const tStr=(t,s=true)=>new Date(t*1000).toLocaleTimeString('nl-NL',s?{hour:'2-digit',minute:'2-digit',second:'2-digit'}:{hour:'2-digit',minute:'2-digit'});
+const dStr=t=>new Date(t*1000).toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rnd,rndB=mulberry32(Date.now()&0xffffffff);function gauss(){let u=0;while(u===0)u=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rnd())}
+let MODE='live';
+const LIVE=()=>MODE==='live';
+
+// ================= candle-hulpjes =================
+function agg(src,B){const out=[];let cur=null;for(const k of src){const bt=Math.floor(k.t/B)*B;if(!cur||cur.t!==bt){cur={t:bt,o:k.o,h:k.h,l:k.l,c:k.c,v:k.v||0};out.push(cur);}else{if(k.h>cur.h)cur.h=k.h;if(k.l<cur.l)cur.l=k.l;cur.c=k.c;cur.v+=k.v||0;}}return out;}
+function bs(arr,ts){let lo=0,hi=arr.length-1,r=-1;while(lo<=hi){const m=(lo+hi)>>1;if(arr[m].t<=ts){r=m;lo=m+1;}else hi=m-1;}return r;}
+// 5m- en 15m-candles: live rechtstreeks van Kraken, in de oefenmarkt opgebouwd uit 1m-candles
+function c5(n){return LIVE()?M.m5.slice(-n):agg(M.minutes.slice(-(n*5)).concat([M.curMin]),300).slice(-n);}
+function c15(n){return LIVE()?M.m15.slice(-n):agg(M.minutes.slice(-(n*15)).concat([M.curMin]),900).slice(-n);}
+function c15closed(n){return (LIVE()?M.m15.filter(k=>k.t+900<=M.t):agg(M.minutes.slice(-(n*15)),900)).slice(-n);}
+function c1d(n){return LIVE()?M.d1.slice(-n):agg(M.hours.slice(-(n*24)).concat([M.curHour]),DAY).slice(-n);}
+
+// ================= oefenmarkt: gesimuleerde koers met trend- en range-perioden en volume =================
+function newRegime(){const range=rnd()<0.55;return {range,mu:range?0:gauss()*1.1,k:range?(2+rnd()*6)/DAY:0,anchor:null,vm:0.7+rnd()*0.8,left:(0.7+rnd()*5)*DAY};}
+function step(p,dt,reg){
+  if(reg.anchor===null)reg.anchor=p;
+  const s=SIG_S*reg.vm*Math.sqrt(dt);let jump=0;if(rnd()<dt/(5*DAY))jump=gauss()*0.02;
+  reg.left-=dt;
+  return p*Math.exp(reg.mu/YEAR*dt-Math.min(0.5,reg.k*dt)*Math.log(p/reg.anchor)-0.5*s*s+s*gauss()+jump);
+}
+function volFor(o,c,dt){return (dt/60)*10*(0.5+rnd())*(1+0.8*Math.abs(Math.log(c/o))/(SIG_S*Math.sqrt(dt)));}
+let M=null;
+function baseMarket(extra){return Object.assign({t:0,p:0,minutes:[],hours:[],curMin:null,curHour:null,m5:[],m15:[],d1:[],
+  sec:new Float64Array(SECN),secIdx:0,secCount:1,marks:[],newMin:false,new15:false,levels:[],sup:null,res:null,sig:null,vol15:0,c15:[],ready:false},extra);}
+function newMarket(seed){
+  rnd=mulberry32(seed);rndB=mulberry32(seed*31+7);
+  const start=Math.floor(Date.now()/1000/HOUR)*HOUR,t0=start-YEAR;
+  let p=55000+rnd()*20000,reg=newRegime();const hours=[],minutes=[];const histH=(365-30)*24;
+  for(let i=0;i<histH;i++){if(reg.left<=0)reg=newRegime();const o=p;let h=p,l=p,v=0;for(let k=0;k<6;k++){const a=p;p=step(p,600,reg);v+=volFor(a,p,600);if(p>h)h=p;if(p<l)l=p;}hours.push({t:t0+i*HOUR,o,h,l,c:p,v});}
+  const mS=t0+histH*HOUR;
+  for(let i=0;i<30*24*60;i++){if(reg.left<=0)reg=newRegime();const o=p;let h=p,l=p,v=0;for(let k=0;k<4;k++){const a=p;p=step(p,15,reg);v+=volFor(a,p,15);if(p>h)h=p;if(p<l)l=p;}minutes.push({t:mS+i*60,o,h,l,c:p,v});}
+  for(const k of agg(minutes,HOUR))hours.push(k);
+  const f=(80000+rnd()*15000)/p; // koersniveau realistisch houden
+  for(const arr of [hours,minutes])for(const k of arr){k.o*=f;k.h*=f;k.l*=f;k.c*=f;}
+  p*=f;if(reg.anchor)reg.anchor*=f;
+  M=baseMarket({live:false,t:start,p,reg,hours,minutes,curMin:{t:start,o:p,h:p,l:p,c:p,v:0},curHour:{t:start,o:p,h:p,l:p,c:p,v:0},ready:true});
+  M.sec[0]=p;
+  onMinute(true);onFifteen();
+}
+function upd(k,p,v){if(p>k.h)k.h=p;if(p<k.l)k.l=p;k.c=p;k.v+=v;}
+function priceAt(ts){
+  const age=Math.round(M.t-ts);if(age<=0)return M.p;
+  if(age<M.secCount)return M.sec[(M.secIdx-age+SECN)%SECN];
+  for(const [arr,cur] of [[M.minutes,M.curMin],[M.hours,M.curHour],[M.d1,null]]){
+    if(arr.length&&ts>=arr[0].t){const i=bs(arr,ts);if(i===arr.length-1&&cur&&ts>=cur.t)return cur.c;return arr[i].c;}
+  }
+  const H=M.d1.length?M.d1:M.hours;return H.length?H[0].c:M.p;
+}
+function z(s){return Math.log(M.p/priceAt(M.t-s))/(VOL*Math.sqrt(s/YEAR));}
+
+// ================= live koersen: openbare Kraken WebSocket (geen account, geen sleutels) =================
+let ws=null,wsTimer=null,connAt=0,lastMsg=0;
+const IVS=[1,5,15,60,1440];
+function newLiveMarket(){return baseMarket({live:true,got:new Set()});}
+function setConn(st,txt){const c=$('#conn');c.className='conn '+(st||'');c.textContent=txt||'';}
+function liveConnect(){
+  clearTimeout(wsTimer);
+  if(ws){const o=ws;ws=null;try{o.close();}catch(e){}}
+  connAt=Date.now();lastMsg=Date.now();setConn('bezig','◌ VERBINDEN');
+  let s;try{s=new WebSocket(WS_URL);}catch(e){setConn('weg','○ GEEN VERBINDING');wsTimer=setTimeout(liveConnect,5000);return;}
+  ws=s;
+  s.onopen=()=>{
+    for(const iv of IVS)s.send(JSON.stringify({method:'subscribe',params:{channel:'ohlc',symbol:[SYM],interval:iv,snapshot:true}}));
+    s.send(JSON.stringify({method:'subscribe',params:{channel:'ticker',symbol:[SYM]}}));
+  };
+  s.onmessage=e=>{if(ws!==s)return;lastMsg=Date.now();let m;try{m=JSON.parse(e.data);}catch(_){return;}onWs(m);};
+  s.onclose=()=>{if(ws!==s)return;ws=null;setConn('weg','○ VERBINDING WEG');if(LIVE())wsTimer=setTimeout(liveConnect,4000);};
+  s.onerror=()=>{try{s.close();}catch(_){}};
+}
+function liveStop(){clearTimeout(wsTimer);if(ws){const o=ws;ws=null;try{o.close();}catch(e){}}setConn('','');}
+function tsOf(s){return Math.floor(Date.parse(String(s).replace(/\.\d+Z$/,'Z'))/1000);}
+function upsert(a,k){const L=a[a.length-1];if(!L||k.t>L.t){a.push(k);return;}const i=bs(a,k.t);if(i>=0&&a[i].t===k.t)Object.assign(a[i],k);}
+function upsertCur(k,an,cn){
+  const cur=M[cn];
+  if(!cur){M[cn]=k;return;}
+  if(k.t===cur.t){Object.assign(cur,k);return;}
+  if(k.t>cur.t){M[an].push(cur);M[cn]=k;return;}
+  upsert(M[an],k); // ouder dan de lopende candle (bv. snapshot na herverbinden)
+}
+function onWs(m){
+  if(!M||!M.live)return;
+  if(m.method==='subscribe'&&m.success===false){setConn('weg','○ FOUT');$('#loadmsg').textContent='Kraken weigerde het verzoek: '+(m.error||'onbekende fout');return;}
+  if(m.channel==='ticker'&&Array.isArray(m.data)&&m.data[0]){const p=+m.data[0].last;if(p>0)M.p=p;if(M.ready)setConn('live','● LIVE · KRAKEN');return;}
+  if(m.channel!=='ohlc'||!Array.isArray(m.data))return;
+  const ks=[];
+  for(const d of m.data){if(d.symbol&&d.symbol!==SYM)continue;const k={iv:+d.interval,t:tsOf(d.interval_begin),o:+d.open,h:+d.high,l:+d.low,c:+d.close,v:+d.volume||0};if(k.t>0&&k.c>0)ks.push(k);}
+  ks.sort((a,b)=>a.t-b.t);
+  for(const x of ks){const k={t:x.t,o:x.o,h:x.h,l:x.l,c:x.c,v:x.v};
+    if(x.iv===1){upsertCur(k,'minutes','curMin');if(!M.ready||k.t>=M.curMin.t)M.p=M.curMin.c;}
+    else if(x.iv===60)upsertCur(k,'hours','curHour');
+    else if(x.iv===5)upsert(M.m5,k);
+    else if(x.iv===15)upsert(M.m15,k);
+    else if(x.iv===1440)upsert(M.d1,k);
+    if(m.type==='snapshot')M.got.add(x.iv);}
+  if(M.minutes.length>4000)M.minutes.splice(0,1000);
+  for(const a of [M.m5,M.m15])if(a.length>3000)a.splice(0,1000);
+  if(!M.ready)maybeStartLive();
+}
+function maybeStartLive(){
+  if(!(M.got.has(1)&&M.got.has(5)&&M.got.has(15)&&M.got.has(60)&&M.curMin&&M.curHour&&M.m5.length&&M.m15.length&&M.p>0))return;
+  M.t=Math.floor(Date.now()/1000);M.sec[0]=M.p;M.secCount=1;M.secIdx=0;
+  M.lastMinIdx=Math.floor(M.t/60);M.last15=Math.floor(M.t/900);M.ready=true;
+  onMinute(true);onFifteen();resetBots();
+  setConn('live','● LIVE · KRAKEN');document.body.classList.remove('wachten');
+  toast('Live koersen binnen. Bots starten met nep-geld.');
+}
+
+// ================= EMA, steun/weerstand =================
+function ema(vals,n){const out=new Array(vals.length).fill(null);if(vals.length<n)return out;const k=2/(n+1);let e=0;for(let i=0;i<n;i++)e+=vals[i];e/=n;out[n-1]=e;for(let i=n;i<vals.length;i++){e=vals[i]*k+e*(1-k);out[i]=e;}return out;}
+function last(a){return a[a.length-1];}
+function emaSignal(){
+  const m1=M.minutes.slice(-300).concat([M.curMin]).map(x=>x.c);
+  const cl5=c5(300).map(x=>x.c);
+  const e={m1:{9:last(ema(m1,9)),20:last(ema(m1,20))},m5:{9:last(ema(cl5,9)),20:last(ema(cl5,20)),200:last(ema(cl5,200))}};
+  const up1=e.m1[9]>e.m1[20],up5=e.m5[9]>e.m5[20],trend=e.m5[200]==null?0:(M.p>e.m5[200]?1:-1);
+  // Kopen bij een laagpunt, houden bij stabiliteit, verkopen bij een hoogtepunt.
+  const d20=e.m5[20]==null?0:(M.p/e.m5[20]-1)*100;
+  const nearSup=M.sup&&(M.p/M.sup.p-1)*100>=-0.1&&(M.p/M.sup.p-1)*100<=S.zone;
+  const nearRes=M.res&&(M.res.p/M.p-1)*100>=-0.1&&(M.res.p/M.p-1)*100<=S.zone;
+  const low=nearSup||d20<=-0.4,high=nearRes||d20>=0.4;
+  let act='HOUDEN';
+  if(low&&!high&&trend===1)act='KOPEN';else if(high&&!low)act='VERKOPEN';
+  const why=[
+    nearSup?`Laagpunt: koers vlak boven steun ${fP(M.sup.p)}`:d20<=-0.4?`Laagpunt: koers ${nl(-d20)}% onder de 20 EMA (5m)`:'Geen laagpunt: niet bij steun en niet ver onder de 20 EMA',
+    nearRes?`Hoogtepunt: koers vlak onder weerstand ${fP(M.res.p)}`:d20>=0.4?`Hoogtepunt: koers ${nl(d20)}% boven de 20 EMA (5m)`:'Geen hoogtepunt: niet bij weerstand en niet ver boven de 20 EMA',
+    trend===0?'Trend: nog te weinig 5m-candles voor de 200 EMA':`Trend: koers ${trend===1?'boven':'onder'} de 200 EMA (5m) ${fP(e.m5[200])}${low&&trend!==1?' → laagpunt, maar tegen de trend in: niet kopen':''}`,
+    `Momentum: 9 EMA ${up5?'boven':'onder'} 20 EMA (5m), ${up1?'boven':'onder'} (1m)`];
+  return {act,trend,up1,up5,e,why};
+}
+function findLevels(){
+  const now=M.t,k=3,pts=[];
+  const h1=M.hours.slice(-720).concat([M.curHour]),m15=c15(192);
+  for(const [cs,w,span] of [[h1,1,30*DAY],[m15,.6,2*DAY]]){
+    for(let i=k;i<cs.length-k;i++){let isH=true,isL=true;for(let j=i-k;j<=i+k;j++){if(cs[j].h>cs[i].h)isH=false;if(cs[j].l<cs[i].l)isL=false;}
+      const rec=.5+.5*Math.max(0,1-(now-cs[i].t)/span);if(isH)pts.push([cs[i].h,w*rec]);if(isL)pts.push([cs[i].l,w*rec]);}}
+  pts.sort((a,b)=>a[0]-b[0]);const cl=[];
+  for(const [p,w] of pts){const c=cl[cl.length-1];if(c&&Math.abs(p/c.p-1)*100<=0.35){c.p=(c.p*c.w+p*w)/(c.w+w);c.w+=w;c.n++;}else cl.push({p,w,n:1});}
+  const lv=cl.filter(c=>c.n>=2&&Math.abs(c.p/M.p-1)<0.10).map(c=>Object.assign(c,{kind:c.p<M.p?'steun':'weerstand',dist:c.p/M.p-1}));
+  lv.sort((a,b)=>Math.abs(a.dist)-Math.abs(b.dist));
+  M.levels=lv.slice(0,12);M.sup=M.levels.find(c=>c.kind==='steun'&&c.w>=1.5)||null;M.res=M.levels.find(c=>c.kind==='weerstand'&&c.w>=1.5)||null;
+}
+function onMinute(init){M.sig=emaSignal();if(init)findLevels();}
+function onFifteen(){
+  M.c15=c15closed(24);
+  const vs=M.c15.slice(-21,-1).map(x=>x.v);M.vol15=vs.reduce((a,b)=>a+b,0)/Math.max(1,vs.length);
+  findLevels();
+}
+
+// ================= bots =================
+const S={start:50,doel:75,rem:35,fee:0.0025,zone:0.30,buf:0.20,stop:0.40,minRange:1.2,volF:1.5,ema:true,ask:false};
+const DEFS=[
+ {id:'steun',naam:'Steunkoper',kleur:'#22c55e',uitleg:'Koopt net boven steun, verkoopt net onder weerstand.'},
+ {id:'weerstand',naam:'Weerstandverkoper',kleur:'#ef4444',uitleg:'Shortt net onder weerstand, sluit net boven steun.'},
+ {id:'bo_up',naam:'Uitbraak omhoog',kleur:'#38bdf8',uitleg:'Koopt bij een 15m-slot met volume boven de weerstand.'},
+ {id:'bo_down',naam:'Uitbraak omlaag',kleur:'#a78bfa',uitleg:'Shortt bij een 15m-slot met volume onder de steun.'},
+ {id:'rnd',naam:'Toeval',kleur:'#f472b6',uitleg:'Gooit een munt. Controlegroep.'},
+];
+let bots=[],trades=[],pending=[],feedDirty=true,totalTr=0,sampleStep=10,lastSample=0;
+function makeBot(d){return {d,cash:S.start,pos:null,n:0,closed:0,wins:0,eq:[{t:M.t,e:S.start}],peak:S.start,maxDD:0,status:'actief',thought:'Opstarten…',cool:0,snooze:0,next:M.t+900+Math.floor(rndB()*3600),tnext:0};}
+function resetBots(){bots=DEFS.map(makeBot);trades=[];pending=[];M.marks=[];totalTr=0;sampleStep=LIVE()?5:10;lastSample=M.t;feedDirty=true;propsDirty=true;}
+function equity(b){const P=b.pos;if(!P)return b.cash;return P.side===1?b.cash+P.qty*M.p:b.cash+(P.entry-M.p)*P.qty;}
+function log(b,actie,why,pnl,ret){trades.unshift({t:M.t,b,actie,p:M.p,why,pnl,ret});if(trades.length>80)trades.pop();totalTr++;feedDirty=true;}
+function doOpen(b,side,why,tp,sl,trail){
+  const notional=b.cash*0.95,fee=notional*S.fee,qty=notional/M.p;
+  if(side===1)b.cash-=notional+fee;else b.cash-=fee;
+  b.pos={side,qty,entry:M.p,fee,ext:M.p,borrow:0,tp,sl,trail};b.n++;
+  log(b,side===1?'Open long':'Open short',why,null,null);M.marks.push({t:M.t,p:M.p,side,kind:'open',c:b.d.kleur});
+  b.thought=`${side===1?'Long':'Short'} @ ${fP(M.p)}. Doel ${fP(tp)}, stop ${fP(sl)}.`;
+}
+function doClose(b,why,final){
+  const P=b.pos,ef=P.qty*M.p*S.fee;let pnl;
+  if(P.side===1){b.cash+=P.qty*M.p-ef;pnl=P.qty*(M.p-P.entry)-P.fee-ef;}else{b.cash+=(P.entry-M.p)*P.qty-ef;pnl=(P.entry-M.p)*P.qty-P.fee-ef-P.borrow;}
+  b.closed++;if(pnl>0)b.wins++;b.pos=null;b.cool=M.t+900;b.next=M.t+1200+Math.floor(rndB()*12000);
+  log(b,P.side===1?'Sluit long':'Sluit short',why,pnl,pnl/(P.qty*P.entry));M.marks.push({t:M.t,p:M.p,side:P.side,kind:'close',c:b.d.kleur});
+  if(M.marks.length>400)M.marks.splice(0,100);
+  if(final){b.status=final;b.thought=final==='doel'?`Doel gehaald: ${fmtE.format(b.cash)}.`:`Noodrem bij ${fmtE.format(b.cash)}.`;toast((final==='doel'?'🎯 ':'⛔ ')+b.d.naam+': '+(final==='doel'?'doel gehaald':'noodrem'));}
+}
+function wantOpen(b,side,why,tp,sl,trail){
+  if(S.ask){pending.push({id:Math.random().toString(36).slice(2),b,kind:'buy',side,why,tp,sl,trail,created:Date.now(),price:M.p});b.thought='Wacht op jouw akkoord: '+(side===1?'kopen':'short openen')+'. '+why;propsDirty=true;notifyBeep();return;}
+  doOpen(b,side,why,tp,sl,trail);
+}
+function wantClose(b,why,final){
+  if(S.ask){if(M.t<b.snooze&&!final){b.thought='Wil sluiten ('+why+'), maar je koos houden.';return;}
+    pending.push({id:Math.random().toString(36).slice(2),b,kind:'sell',side:b.pos.side,why,final,created:Date.now(),price:M.p});b.thought='Wacht op jouw akkoord: '+(b.pos.side===1?'verkopen':'short sluiten')+'. '+why;propsDirty=true;notifyBeep();return;}
+  doClose(b,why,final);
+}
+const hasPend=b=>pending.some(x=>x.b===b);
+// Range voor een bot: de dichtstbijzijnde sterke lijn aan de instapkant, en als doel de eerste sterke lijn aan de andere kant
+// die ver genoeg weg ligt om na kosten winst over te houden.
+function rangeInfo(side){
+  const strong=M.levels.filter(c=>c.w>=1.5);
+  if(side===-1){const R=M.res;if(!R)return null;const Sx=strong.filter(c=>c.p<R.p&&(R.p-c.p)/c.p*100>=S.minRange).sort((a,b)=>b.p-a.p)[0]||M.sup;if(!Sx)return null;return {S:Sx.p,R:R.p,w:(R.p-Sx.p)/Sx.p*100,n:R.n};}
+  const Sp=M.sup;if(!Sp)return null;const Rx=strong.filter(c=>c.p>Sp.p&&(c.p-Sp.p)/Sp.p*100>=S.minRange).sort((a,b)=>a.p-b.p)[0]||M.res;if(!Rx)return null;
+  return {S:Sp.p,R:Rx.p,w:(Rx.p-Sp.p)/Sp.p*100,n:Sp.n};
+}
+const STRAT={
+  steun(b){if(M.t<b.tnext)return;b.tnext=M.t+60;
+    const r=rangeInfo(1);if(b.pos){b.thought=`In positie. Verkoopt net onder weerstand (${fP(b.pos.tp)}), stop ${fP(b.pos.sl)}.`;return;}
+    if(!r){b.thought='Geen duidelijke steun en weerstand. Wacht.';return;}
+    const gap=(M.p/r.S-1)*100;
+    if(M.t<b.cool){b.thought=`Afkoelen. Steun ${fP(r.S)}, koers ${pct(gap/100)} erboven.`;return;}
+    if(r.w<S.minRange){b.thought=`Range ${fP(r.S)}–${fP(r.R)} is ${nl(r.w)}%: te smal na kosten.`;return;}
+    if(S.ema&&M.sig.trend===-1){b.thought=`Steun ${fP(r.S)} · weerstand ${fP(r.R)}. Onder de 200 EMA: geen long tegen de trend.`;return;}
+    const lc=M.c15[M.c15.length-1];if(!lc){b.thought='Wacht op 15m-candles.';return;}
+    const tp=r.R*(1-0.002),sl=r.S*(1-S.stop/100),rr=(tp-M.p)/Math.max(1e-9,M.p-sl);
+    if(gap>=0.05&&gap<=S.zone&&lc.c>r.S&&rr>=1.5)wantOpen(b,1,`Net boven steun ${fP(r.S)} (${r.n}× getest). Doel net onder weerstand ${fP(r.R)}, winst/risico ${nl(rr,1)}`,tp,sl);
+    else b.thought=`Steun ${fP(r.S)} · doel ${fP(r.R)}. Koers ${pct(gap/100)} boven steun: ${lc.c<=r.S?'vorige 15m-candle sloot onder de steun':(gap>=0.05&&gap<=S.zone)?'winst/risico '+nl(rr,1)+' is lager dan 1,5':'koopt pas binnen +'+nl(S.zone)+'% boven de steun'}.`;},
+  weerstand(b){if(M.t<b.tnext)return;b.tnext=M.t+60;
+    const r=rangeInfo(-1);if(b.pos){b.thought=`Short. Sluit net boven steun (${fP(b.pos.tp)}), stop ${fP(b.pos.sl)}.`;return;}
+    if(!r){b.thought='Geen duidelijke steun en weerstand. Wacht.';return;}
+    const gap=(r.R/M.p-1)*100;
+    if(M.t<b.cool){b.thought=`Afkoelen. Weerstand ${fP(r.R)}, koers ${nl(gap)}% eronder.`;return;}
+    if(r.w<S.minRange){b.thought=`Range ${fP(r.S)}–${fP(r.R)} te smal na kosten.`;return;}
+    if(S.ema&&M.sig.trend===1){b.thought=`Weerstand ${fP(r.R)} · steun ${fP(r.S)}. Boven de 200 EMA: geen short tegen de trend.`;return;}
+    const lc=M.c15[M.c15.length-1];if(!lc){b.thought='Wacht op 15m-candles.';return;}
+    const tp=r.S*(1+0.002),sl=r.R*(1+S.stop/100),rr=(M.p-tp)/Math.max(1e-9,sl-M.p);
+    if(gap>=0.05&&gap<=S.zone&&lc.c<r.R&&rr>=1.5)wantOpen(b,-1,`Net onder weerstand ${fP(r.R)} (${r.n}× getest). Doel net boven steun ${fP(r.S)}, winst/risico ${nl(rr,1)}`,tp,sl);
+    else b.thought=`Weerstand ${fP(r.R)} · doel ${fP(r.S)}. Koers ${nl(gap)}% onder weerstand: ${lc.c>=r.R?'vorige 15m-candle sloot boven de weerstand':(gap>=0.05&&gap<=S.zone)?'winst/risico '+nl(rr,1)+' is lager dan 1,5':'shortt pas binnen −'+nl(S.zone)+'% onder de weerstand'}.`;},
+  bo_up(b){breakout(b,true);},bo_down(b){breakout(b,false);},
+  rnd(b){if(b.pos){b.thought='Munt gegooid. ±2% sluit de trade.';return;}
+    if(M.t<b.next){b.thought='Volgende muntworp om '+tStr(b.next,false)+'.';return;}
+    const side=rndB()<.5?1:-1;wantOpen(b,side,'Muntworp: '+(side===1?'kop → long':'munt → short'),M.p*(1+.02*side),M.p*(1-.02*side));}
+};
+function breakout(b,up){
+  if(b.pos){b.thought=`Rijdt mee met de uitbraak. Doel ${fP(b.pos.tp)}, stop ${fP(b.pos.sl)} (+ meeschuivende stop).`;return;}
+  if(!M.new15&&!b.thought.startsWith('Opstarten'))return;
+  const r=rangeInfo(up?1:-1),lvl=up?(M.res&&M.res.p):(M.sup&&M.sup.p);
+  if(!lvl){b.thought='Geen duidelijke lijn. Wacht.';return;}
+  const cs=M.c15;if(cs.length<2){b.thought='Wacht op 15m-candles.';return;}
+  const prev=cs[cs.length-2],cur=cs[cs.length-1],buf=S.buf/100;
+  const vr=M.vol15?cur.v/M.vol15:0,volOk=vr>=S.volF;
+  const crossed=up?(prev.c<=lvl&&cur.c>lvl*(1+buf)):(prev.c>=lvl&&cur.c<lvl*(1-buf));
+  const emaOk=!S.ema||(up?M.sig.up5:!M.sig.up5),rng=r?(r.R-r.S):lvl*0.015;
+  if(M.t<b.cool){b.thought=`Afkoelen. Let op ${up?'weerstand':'steun'} ${fP(lvl)}.`;return;}
+  if(crossed&&volOk&&!emaOk)b.thought=`Door ${fP(lvl)} met volume, maar 9 EMA staat ${up?'onder':'boven'} 20 EMA (5m): geen bevestiging.`;
+  else if(crossed&&volOk){wantOpen(b,up?1:-1,`Uitbraak: 15m-slot ${fP(cur.c)} ${up?'boven weerstand':'onder steun'} ${fP(lvl)} met ${nl(vr,1)}× volume`,
+      up?lvl+rng:lvl-rng,up?lvl*(1-S.stop/100):lvl*(1+S.stop/100),0.015);b.cool=M.t+3600;}
+  else if(crossed)b.thought=`Door ${fP(lvl)} maar volume maar ${nl(vr,1)}×: mogelijke valse uitbraak.`;
+  else b.thought=`Wacht op 15m-slot ${up?'boven':'onder'} ${fP(lvl)} (${up?'+':'−'}${nl(S.buf)}%, ${nl(S.volF,1)}× volume). Nu ${nl(Math.abs(lvl/M.p-1)*100)}% ${up?'eronder':'erboven'}.`;
+}
+function botTick(b){
+  if(b.status!=='actief'||hasPend(b))return;
+  const P=b.pos,p=M.p;
+  if(P){
+    if(P.side===-1){const bf=P.qty*p*0.0003/DAY;b.cash-=bf;P.borrow+=bf;}
+    const s=P.side;P.ext=s===1?Math.max(P.ext,p):Math.min(P.ext,p);let why=null;
+    if(s*(p-P.tp)>=0)why=`Doel ${fP(P.tp)} geraakt`;
+    else if(s*(p-P.sl)<=0)why=`Stop ${fP(P.sl)} geraakt`;
+    else if(P.trail&&s*(P.ext/P.entry-1)>0.01){const back=s===1?1-p/P.ext:p/P.ext-1;if(back>=P.trail)why=`Meeschuivende stop: 1,5% terug van ${s===1?'top':'bodem'}`;}
+    if(why){wantClose(b,why);return;}
+  }
+  const e=equity(b);
+  if(e>=S.doel||e<=S.rem){const f=e>=S.doel?'doel':'rem';if(b.pos)wantClose(b,f==='doel'?'Doel bereikt':'Noodrem',f);else{b.status=f;}return;}
+  STRAT[b.d.id](b);
+}
+function botsStep(){
+  for(const b of bots)botTick(b);
+  if(M.t-lastSample>=sampleStep){lastSample=M.t;for(const b of bots){const e=equity(b);b.eq.push({t:M.t,e});if(e>b.peak)b.peak=e;b.maxDD=Math.max(b.maxDD,1-e/b.peak);}
+    if(bots.length&&bots[0].eq.length>1500){for(const b of bots)b.eq=b.eq.filter((_,i)=>i%2===0);sampleStep*=2;}}
+}
+function pushSec(){M.secIdx=(M.secIdx+1)%SECN;M.sec[M.secIdx]=M.p;if(M.secCount<SECN)M.secCount++;}
+
+// ================= tikken: oefenmarkt (versneld) en live (echte seconden) =================
+function tick(){
+  M.t++;M.newMin=false;M.new15=false;
+  if(M.reg.left<=0)M.reg=newRegime();
+  const a=M.p;M.p=step(M.p,1,M.reg);const v=volFor(a,M.p,1);
+  pushSec();
+  if(M.t%60===0){M.minutes.push(M.curMin);M.curMin={t:M.t,o:M.p,h:M.p,l:M.p,c:M.p,v};M.newMin=true;if(M.minutes.length>60*24*40)M.minutes.splice(0,60*24);onMinute();
+    if(M.t%900===0){onFifteen();M.new15=true;}}
+  else upd(M.curMin,M.p,v);
+  if(M.t%HOUR===0){M.hours.push(M.curHour);M.curHour={t:M.t,o:M.p,h:M.p,l:M.p,c:M.p,v};}else upd(M.curHour,M.p,v);
+  if(M.t%30===0)findLevelsLite();
+  botsStep();
+}
+function tickLive(){
+  M.t++;M.newMin=false;M.new15=false;
+  pushSec();
+  const mi=Math.floor(M.t/60);
+  if(mi!==M.lastMinIdx){M.lastMinIdx=mi;M.newMin=true;onMinute();
+    const q=Math.floor(M.t/900);if(q!==M.last15){M.last15=q;onFifteen();M.new15=true;}}
+  if(M.t%30===0)findLevelsLite();
+  botsStep();
+}
+function findLevelsLite(){ // alleen steun/weerstand opnieuw indelen t.o.v. de koers
+  for(const c of M.levels){c.kind=c.p<M.p?'steun':'weerstand';c.dist=c.p/M.p-1;}
+  M.levels.sort((a,b)=>Math.abs(a.dist)-Math.abs(b.dist));
+  M.sup=M.levels.find(c=>c.kind==='steun'&&c.w>=1.5)||null;M.res=M.levels.find(c=>c.kind==='weerstand'&&c.w>=1.5)||null;
+}
+
+// ================= tekenen =================
+function fit(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1,W=Math.round(r.width*d),H=Math.round(r.height*d);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);return {ctx,w:r.width,h:r.height};}
+const TF={'1m':60,'5m':300,'15m':900,'1u':HOUR,'1d':DAY};let tf='5m';
+function series(n){
+  const warm=n+260;
+  if(tf==='1m')return M.minutes.slice(-(warm-1)).concat([M.curMin]);
+  if(tf==='5m')return c5(warm);
+  if(tf==='15m')return c15(warm);
+  if(tf==='1u')return M.hours.slice(-(warm-1)).concat([M.curHour]);
+  return c1d(warm);
+}
+function drawPrice(){
+  const {ctx,w,h}=fit($('#cv-price'));const padR=62,padB=20,padT=10,n=Math.max(30,Math.min(140,Math.floor((w-padR)/8)));
+  const all=series(n),cs=all.slice(-n),B=TF[tf],closes=all.map(x=>x.c);
+  if(!cs.length)return;
+  const E={};for(const k of [9,20,200])E[k]=ema(closes,k).slice(-cs.length);
+  let hi=-Infinity,lo=Infinity;for(const k of cs){if(k.h>hi)hi=k.h;if(k.l<lo)lo=k.l;}const pad=(hi-lo)*.08||1;hi+=pad;lo-=pad;
+  const cw=(w-padR)/n,Y=v=>padT+(hi-v)/(hi-lo)*(h-padB-padT),X=i=>i*cw+cw/2;
+  ctx.font='11px JetBrains Mono, monospace';ctx.textBaseline='middle';
+  for(let g=0;g<=4;g++){const v=lo+(hi-lo)*g/4,y=Y(v);ctx.strokeStyle='#1b2335';ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.fillStyle='#6b7690';ctx.fillText(fP(v),w-padR+5,y);}
+  const st=Math.max(1,Math.round(n/5));ctx.textAlign='center';
+  for(let i=0;i<cs.length;i+=st){const t=cs[i].t;ctx.fillStyle='#6b7690';ctx.fillText(tf==='1d'?dStr(t):tf==='1u'?dStr(t)+' '+tStr(t,false):tStr(t,false),X(i),h-8);}
+  ctx.textAlign='left';
+  for(const L of M.levels){const y=Y(L.p);if(y<padT||y>h-padB)continue;const main=L===M.sup||L===M.res,c=L.kind==='steun'?'#22c55e':'#ef4444';
+    ctx.globalAlpha=main?.95:.35;ctx.strokeStyle=c;ctx.lineWidth=main?2:1;ctx.setLineDash(main?[]:[6,4]);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.setLineDash([]);
+    if(main){ctx.globalAlpha=.1;ctx.fillStyle=c;const zz=Math.abs(Y(L.p*(1+(L.kind==='steun'?1:-1)*S.zone/100))-y);ctx.fillRect(0,L.kind==='steun'?y-zz:y,w-padR,zz);
+      ctx.globalAlpha=1;ctx.fillStyle=c;ctx.font='10.5px Inter, sans-serif';ctx.fillText(`${L.kind==='steun'?'Steun':'Weerstand'} ${fP(L.p)} (${L.n}×)`,4,y+(L.kind==='steun'?12:-7));ctx.font='11px JetBrains Mono, monospace';}
+    ctx.globalAlpha=1;ctx.lineWidth=1;}
+  const bw=Math.max(1,cw*.62);
+  cs.forEach((k,i)=>{const up=k.c>=k.o;ctx.strokeStyle=ctx.fillStyle=up?'#22c55e':'#ef4444';const x=X(i);ctx.beginPath();ctx.moveTo(x,Y(k.h));ctx.lineTo(x,Y(k.l));ctx.stroke();const y1=Y(Math.max(k.o,k.c)),y2=Y(Math.min(k.o,k.c));ctx.fillRect(x-bw/2,y1,bw,Math.max(1,y2-y1));});
+  for(const [k,c,lw] of [[200,'#e5e7eb',2],[20,'#c084fc',1.5],[9,'#22d3ee',1.5]]){ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.beginPath();let on=false;E[k].forEach((v,i)=>{if(v==null){on=false;return;}const y=Y(v);if(y<0||y>h-padB){on=false;return;}on?ctx.lineTo(X(i),y):ctx.moveTo(X(i),y);on=true;});ctx.stroke();}
+  ctx.lineWidth=1;
+  for(const b of bots){if(!b.pos)continue;const y=Y(b.pos.entry);if(y<0||y>h-padB)continue;ctx.setLineDash([5,4]);ctx.strokeStyle=b.d.kleur;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.setLineDash([]);}
+  const t0=cs[0].t;
+  for(const m of M.marks){const i=Math.floor((m.t-t0)/B);if(i<0||i>=cs.length)continue;const x=X(i),y=Y(m.p);ctx.fillStyle=m.c;ctx.strokeStyle=m.c;ctx.lineWidth=1.5;
+    if(m.kind==='open'){ctx.beginPath();if(m.side===1){ctx.moveTo(x,y+4);ctx.lineTo(x-6,y+14);ctx.lineTo(x+6,y+14);}else{ctx.moveTo(x,y-4);ctx.lineTo(x-6,y-14);ctx.lineTo(x+6,y-14);}ctx.closePath();ctx.fill();}
+    else{ctx.beginPath();ctx.arc(x,y,4.5,0,Math.PI*2);ctx.fillStyle='#0a0e16';ctx.fill();ctx.stroke();}ctx.lineWidth=1;}
+  const yp=Y(M.p),lc=cs[cs.length-1];ctx.fillStyle=lc.c>=lc.o?'#16a34a':'#dc2626';ctx.fillRect(w-padR+1,yp-9,padR-2,18);ctx.fillStyle='#fff';ctx.fillText(fP(M.p),w-padR+5,yp);
+}
+function drawEq(){
+  if(!bots.length)return;
+  const {ctx,w,h}=fit($('#cv-eq'));const padR=54,padB=18,padT=8,t0=bots[0].eq[0].t,t1=Math.max(M.t,t0+60);
+  let hi=S.doel,lo=S.rem;for(const b of bots)for(const s of b.eq){if(s.e>hi)hi=s.e;if(s.e<lo)lo=s.e;}const pad=(hi-lo)*.06;hi+=pad;lo-=pad;
+  const X=t=>(t-t0)/(t1-t0)*(w-padR),Y=v=>padT+(hi-v)/(hi-lo)*(h-padB-padT);
+  ctx.font='11px JetBrains Mono, monospace';ctx.textBaseline='middle';
+  for(const [v,c,l] of [[S.doel,'#22c55e','Doel'],[S.start,'#64748b','Start'],[S.rem,'#ef4444','Noodrem']]){const y=Y(v);ctx.setLineDash([6,5]);ctx.strokeStyle=c;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=c;ctx.fillText('€'+fP(v),w-padR+5,y);ctx.fillText(l,4,y-8);}
+  for(const b of bots){ctx.strokeStyle=b.d.kleur;ctx.lineWidth=2;ctx.beginPath();b.eq.forEach((s,i)=>i?ctx.lineTo(X(s.t),Y(s.e)):ctx.moveTo(X(s.t),Y(s.e)));const e=b.status==='actief'?equity(b):b.cash;ctx.lineTo(X(M.t),Y(e));ctx.stroke();ctx.lineWidth=1;}
+}
+function spark(cv,pts,col){const {ctx,w,h}=fit(cv);let hi=Math.max(...pts),lo=Math.min(...pts);if(hi===lo){hi+=1;lo-=1;}ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();pts.forEach((v,i)=>{const x=i/(pts.length-1)*w,y=2+(hi-v)/(hi-lo)*(h-4);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();}
+
+// ================= interface =================
+const SCALES=[['Seconde',10,'10 s'],['Uur',HOUR,''],['Dag',DAY,''],['Week',7*DAY,''],['Maand',30*DAY,''],['Jaar',YEAR,'']];
+function buildStatic(){
+  $('#trends').innerHTML=SCALES.map((s,i)=>`<div class="tile"><div class="lbl"><span>${s[0]}</span><span>${s[2]}</span></div><div class="val mono" id="tv${i}"></div><div class="st" id="ts${i}"></div><canvas id="tc${i}"></canvas></div>`).join('');
+  $('#eqlegend').innerHTML=DEFS.map(d=>`<span><i style="background:${d.kleur}"></i>${d.naam}</span>`).join('');
+}
+function light(b){
+  if(b.status!=='actief')return '<span class="light wacht">■ GESTOPT</span>';
+  const p=pending.find(x=>x.b===b);
+  if(p){const buyAct=(p.kind==='buy')===(p.side===1);return `<span class="light ${buyAct?'kopen':'verkopen'}">● ${p.kind==='buy'?(p.side===1?'KOPEN':'SHORT OPENEN'):(p.side===1?'VERKOPEN':'SHORT SLUITEN')} · akkoord?</span>`;}
+  if(b.pos)return '<span class="light houden">● HOUDEN</span>';
+  return '<span class="light wacht">● WACHT</span>';
+}
+function renderBots(){
+  let tot=0;
+  $('#bots').innerHTML=bots.map(b=>{const e=b.status==='actief'?equity(b):b.cash;tot+=e;const ret=e/S.start-1,P=b.pos;
+    const span=S.doel-S.rem,fx=Math.min(1,Math.max(0,(e-S.rem)/span)),mx=(S.start-S.rem)/span;
+    const fill=e>=S.start?`left:${mx*100}%;width:${(fx-mx)*100}%;background:#22c55e`:`left:${fx*100}%;width:${(mx-fx)*100}%;background:#ef4444`;
+    const r=P?P.side*(M.p/P.entry-1):0;
+    const posl=P?`<span class="mono">${P.side===1?'Long':'Short'} @ ${fP(P.entry)} · doel ${fP(P.tp)} · stop ${fP(P.sl)}</span> <b class="mono ${cls(r)}">${pct(r)}</b>`:'<span class="muted">Geen open positie</span>';
+    return `<div class="bot" style="--c:${b.d.kleur}"><div class="top"><span class="nm"><i></i>${b.d.naam}</span><span class="pill p">PAPIER</span></div>
+      <div class="how">${b.d.uitleg}</div><div class="eq mono">${fmtE.format(e)}</div><div class="ret mono ${cls(ret)}">${pct(ret)} <span class="muted" style="font-weight:500">sinds start</span></div>
+      <div class="track"><div class="fill" style="${fill}"></div><div class="mid" style="left:${mx*100}%"></div></div>
+      <div class="tracklbl"><span>€${S.rem}</span><span>start €${S.start}</span><span>doel €${S.doel}</span></div>
+      <div class="stats"><div>Trades<b class="mono">${b.n}</b></div><div>Winst-%<b class="mono">${b.closed?Math.round(b.wins/b.closed*100)+'%':'–'}</b></div><div>Max daling<b class="mono">${nl(b.maxDD*100,1)}%</b></div></div>
+      <div class="posline">${posl}</div>${light(b)}<div class="thought">🧠 ${esc(b.thought)}</div></div>`;}).join('');
+  const all=S.start*bots.length,r=all?tot/all-1:0;$('#totals').innerHTML=`${fmtE.format(all)} → <b class="${cls(r)}">${fmtE.format(tot)}</b> <span class="${cls(r)}">(${pct(r)})</span>`;
+}
+function renderTrends(){
+  SCALES.forEach((s,i)=>{const ch=M.p/priceAt(M.t-s[1])-1,zz=z(s[1]),lab=zz>1.5?'Sterk stijgend':zz>.5?'Stijgend':zz<-1.5?'Sterk dalend':zz<-.5?'Dalend':'Zijwaarts';
+    const v=$('#tv'+i);v.textContent=pct(ch);v.className='val mono '+cls(ch);const t=$('#ts'+i);t.textContent=(zz>.5?'▲ ':zz<-.5?'▼ ':'◆ ')+lab;t.className='st '+(zz>.5?'up':zz<-.5?'down':'muted');
+    const pts=[];for(let j=0;j<40;j++)pts.push(priceAt(M.t-s[1]+s[1]*j/39));spark($('#tc'+i),pts,ch>=0?'#22c55e':'#ef4444');});
+  const e=M.sig.e;
+  $('#emas').innerHTML=`<span></span><b>9 EMA</b><b>20 EMA</b><b>200 EMA</b><span class="muted">1m</span><span>${fP(e.m1[9])}</span><span>${fP(e.m1[20])}</span><span class="muted">–</span><span class="muted">5m</span><span>${fP(e.m5[9])}</span><span>${fP(e.m5[20])}</span><span>${fP(e.m5[200])}</span>`;
+}
+function renderSignal(){
+  const a=M.sig.act;$('#sigbtn').className='sig '+a.toLowerCase();$('#sigtxt').textContent=a;
+  $('#sigwhyl').innerHTML=M.sig.why.map(w=>`<li>${esc(w)}</li>`).join('')+`<li><b>${a}</b>: ${a==='KOPEN'?'laagpunt in een stijgende trend: kansrijk moment om te kopen':a==='VERKOPEN'?'hoogtepunt bereikt: moment om winst te nemen':'koers is stabiel of de signalen spreken elkaar tegen: houden'}.</li>`;
+}
+function renderLevels(){
+  if(!M.levels.length){$('#lvls').innerHTML='<li class="muted" style="display:block">Nog geen lijnen.</li>';return;}
+  $('#lvls').innerHTML=M.levels.slice().sort((a,b)=>b.p-a.p).map(L=>{const main=L===M.sup||L===M.res;return `<li style="${main?'font-weight:700':''}"><span class="k ${L.kind}">${L.kind==='steun'?'STEUN':'WEERSTAND'}</span><span class="mono">${fP(L.p)}${main?' ◀ actief':''}</span><span class="muted">${L.n}×</span><span class="mono ${cls(L.dist)}">${pct(L.dist)}</span></li>`;}).join('');
+}
+let propsDirty=true;
+function renderProps(){
+  const box=$('#approvals');box.style.display=pending.length?'block':'none';
+  if(propsDirty){propsDirty=false;
+    $('#props').innerHTML=pending.map(p=>{const buy=p.kind==='buy',long=p.side===1;
+      const what=buy?(long?`${p.b.d.naam} wil KOPEN`:`${p.b.d.naam} wil SHORT openen`):(long?`${p.b.d.naam} wil VERKOPEN`:`${p.b.d.naam} wil SHORT SLUITEN`);
+      const buyAct=(buy&&long)||(!buy&&!long); // kopen of short terugkopen = kopen-kleur
+      return `<div class="prop" style="--c:${p.b.d.kleur}"><div><div class="what">${what}</div><div class="why">${esc(p.why)}</div><div class="meta">Koers bij voorstel ${fP(p.price)} · nu ${fP(M.p)}</div></div>
+        <div class="btns"><button class="${buyAct?'kopen':'verkopen'}" data-a="${p.id}">✓ ${buy?(long?'Kopen':'Short openen'):(long?'Verkopen':'Short sluiten')}</button><button class="houden" data-r="${p.id}">✕ Laten (houden)</button></div></div>`;}).join('');}
+}
+function renderFeed(){
+  if(!feedDirty)return;feedDirty=false;$('#ntr').textContent=totalTr?totalTr+' acties':'';
+  if(!trades.length){$('#feed').innerHTML='<li class="muted" style="display:block">Nog geen trades.</li>';return;}
+  $('#feed').innerHTML=trades.slice(0,60).map(x=>{const res=x.pnl==null?`<span class="mono">${fP(x.p)}</span>`:`<b class="mono ${cls(x.pnl)}">${x.pnl>=0?'+':'−'}${fmtE.format(Math.abs(x.pnl))}</b>`;
+    const col=/Open long/.test(x.actie)?'up':/Open short/.test(x.actie)?'down':'muted';
+    return `<li><span class="mono muted">${tStr(x.t)}</span><span><span class="tag" style="background:${x.b.d.kleur}"></span><b>${x.b.d.naam}</b> · <span class="${col}">${x.actie}</span>${x.ret!=null?` <span class="mono ${cls(x.ret)}">${pct(x.ret)}</span>`:''}</span>${res}<span class="why">${esc(x.why)}</span></li>`;}).join('');
+}
+function renderTexts(){
+  $('#banner').innerHTML=LIVE()
+    ?'🟢 <b>Live koersen</b> van Kraken (BTC/EUR, openbare koersfeed). De bots handelen met <b>nep-geld</b>: er gaan nooit echte orders uit en er zijn geen API-sleutels of wachtwoorden nodig. De bots lopen alleen zolang deze pagina open is. Kosten 0,25% per trade zijn meegerekend. Geen financieel advies.'
+    :'⚠️ <b>Oefenmarkt</b> met een gesimuleerde koers en nep-geld. Versnel de tijd om in korte tijd veel trades te zien. Kosten 0,25% per trade zijn meegerekend. Geen financieel advies.';
+  $('#srclbl').textContent=LIVE()?'(live · Kraken)':'(gesimuleerd)';
+}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3200);}
+let actx=null;function notifyBeep(){try{if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=880;g.gain.value=.06;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.2);}catch(e){}}
+
+// ================= besturing =================
+let speed=600,paused=false,acc=0,lastF=performance.now(),lastSlow=0;
+function setScheme(v){document.body.classList.toggle('std',v==='std');try{localStorage.setItem('botlab.kleuren',v);}catch(e){}
+  $('#sigkey').textContent=v==='std'?'groen = kopen · oranje = houden · rood = verkopen':'rood = kopen (laagpunt) · oranje = houden (stabiel) · groen = verkopen (hoogtepunt)';propsDirty=true;}
+document.querySelectorAll('input[name=kl]').forEach(r=>r.addEventListener('change',()=>setScheme(r.value)));
+function seg(sel,attr,val){document.querySelectorAll(sel+' button').forEach(b=>b.classList.toggle('on',b.dataset[attr]==String(val)));}
+function setMode(m){
+  MODE=m==='sim'?'sim':'live';try{localStorage.setItem('botlab.modus',MODE);}catch(e){}
+  seg('#mode','m',MODE);document.body.classList.toggle('live',LIVE());
+  bots=[];pending=[];trades=[];feedDirty=true;propsDirty=true;
+  if(LIVE()){M=newLiveMarket();document.body.classList.add('wachten');$('#loadmsg').textContent='Verbinden met Kraken (BTC/EUR).';liveConnect();}
+  else{liveStop();document.body.classList.remove('wachten');newMarket((Math.random()*1e9)|0);resetBots();}
+  renderTexts();
+}
+$('#mode').onclick=e=>{const m=e.target.dataset.m;if(!m||m===MODE)return;setMode(m);};
+$('#tosim').onclick=()=>setMode('sim');
+$('#speed').onclick=e=>{const s=e.target.dataset.s;if(!s)return;speed=+s;seg('#speed','s',speed);};
+$('#tf').onclick=e=>{const v=e.target.dataset.tf;if(!v)return;tf=v;seg('#tf','tf',tf);};
+$('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'▶':'⏸';};
+$('#restart').onclick=()=>{if(!M||!M.ready)return;resetBots();toast('Bots opnieuw gestart');};
+$('#newmkt').onclick=()=>{if(LIVE())return;newMarket((Math.random()*1e9)|0);resetBots();toast('Nieuwe gesimuleerde markt');};
+$('#sigbtn').onclick=()=>{$('#sigwhy').classList.toggle('on');try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}};
+$('#apply').onclick=()=>{
+  const st=+$('#s-start').value,d=+$('#s-doel').value,r=+$('#s-rem').value,f=+$('#s-fee').value,zn=+$('#s-zone').value,bf=+$('#s-buf').value;
+  if(!(st>0&&d>st&&r<st&&r>=0&&f>=0&&zn>0)){toast('Controleer: noodrem < start < doel');return;}
+  Object.assign(S,{start:st,doel:d,rem:r,fee:f/100,zone:zn,buf:bf,ema:$('#s-ema').checked,ask:$('#s-ask').checked});
+  if(S.ask){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  if(!M||!M.ready){toast('Instellingen opgeslagen. Bots starten zodra de koersen binnen zijn.');return;}
+  resetBots();toast(S.ask?'Herstart: elke order vraagt jouw akkoord':'Herstart met nieuwe instellingen');
+};
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-a]'),r=e.target.closest('[data-r]');
+  if(a){const p=pending.find(x=>x.id===a.dataset.a);if(!p)return;pending=pending.filter(x=>x!==p);
+    if(p.kind==='buy'){if(p.b.status==='actief'&&!p.b.pos)doOpen(p.b,p.side,p.why+' (jouw akkoord)',p.tp,p.sl,p.trail);}
+    else if(p.b.pos)doClose(p.b,p.why+' (jouw akkoord)',p.final);
+    propsDirty=true;renderBots();}
+  if(r){const p=pending.find(x=>x.id===r.dataset.r);if(!p)return;pending=pending.filter(x=>x!==p);
+    if(p.kind==='buy'){p.b.cool=M.t+900;p.b.thought='Je koos: niet kopen. Even afkoelen.';}else{p.b.snooze=M.t+600;p.b.thought='Je koos: houden. Positie blijft open.';}
+    log(p.b,'Afgewezen (houden)',p.why,null,null);propsDirty=true;renderBots();}
+});
+// iPhone zet de verbinding stil als de app op de achtergrond staat: bij terugkomen opnieuw verbinden
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&LIVE()&&(!ws||ws.readyState>1))liveConnect();});
+function frame(now){
+  const dt=Math.min(.25,(now-lastF)/1000);lastF=now;
+  if(M&&M.ready){
+    if(LIVE()){
+      const s=Math.floor(Date.now()/1000);let n=0;while(M.t<s&&n<5){tickLive();n++;}if(M.t<s)M.t=s;
+      if(ws&&ws.readyState===1&&Date.now()-lastMsg>30000)liveConnect(); // geen berichten meer: opnieuw verbinden
+    }else if(!paused){acc+=speed*dt;let n=0;while(acc>=1&&n<8000){tick();acc-=1;n++;}if(n>=8000)acc=0;}
+    $('#clock').textContent=dStr(M.t)+' '+tStr(M.t)+(LIVE()?'':' sim');
+    $('#price').textContent=fmtE.format(M.p);const c=M.p/priceAt(M.t-DAY)-1;$('#chg24').textContent=pct(c)+' (24 u)';$('#chg24').className='mono '+cls(c);
+    drawPrice();drawEq();
+    if(now-lastSlow>300){lastSlow=now;renderSignal();renderTrends();renderLevels();renderBots();renderFeed();renderProps();}
+  }else if(LIVE()){
+    $('#clock').textContent='';
+    if(Date.now()-connAt>20000)$('#loadmsg').textContent='Het lukt nog niet om live koersen op te halen. Controleer je internet, of oefen intussen op de oefenmarkt.';
+  }
+  requestAnimationFrame(frame);
+}
+let kl='mijn';try{kl=localStorage.getItem('botlab.kleuren')||'mijn';}catch(e){}
+document.querySelector(`input[name=kl][value=${kl==='std'?'std':'mijn'}]`).checked=true;
+let startMode='live';try{startMode=localStorage.getItem('botlab.modus')||'live';}catch(e){}
+buildStatic();setScheme(kl);seg('#speed','s',speed);seg('#tf','tf',tf);setMode(startMode);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
