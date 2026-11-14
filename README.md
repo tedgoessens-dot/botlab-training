@@ -18,18 +18,46 @@ Oefen met crypto-tradingbots op **live BTC/EUR-koersen** met **nep-geld**. Botla
 | Stand | Koers | Snelheid |
 | --- | --- | --- |
 | **Live** | Echte BTC/EUR-koers van Kraken | Echte tijd. De bots lopen alleen zolang de pagina open is. |
-| **Oefenmarkt** | Gesimuleerde koers | Versnelbaar tot 1 uur per seconde, dus veel trades in korte tijd |
+| **Oefenmarkt** | Gesimuleerde koers, met rustige en drukke periodes | Versnelbaar tot 1 dag per seconde, dus ook week-, maand- en jaarresultaten |
+
+## Opdracht: handelen met zo weinig mogelijk risico
+
+Bovenaan stel je drie dingen in:
+
+- **Risico per trade (schuifregelaar, 0,25% tot 5%).** Elke trade heeft vooraf een stop. De bot kiest de grootte van de positie zo dat het verlies bij de stop, inclusief kosten, precies dit percentage van zijn vermogen is. Bij 1% en €50 is dat maximaal €0,50 per trade.
+- **Handelsstijl: uur, dag, week of maand.** De bots kijken dan naar andere candles, van 1 en 5 minuten bij uur-traden tot dagcandles bij maandtraden. Ook stop, zone en minimale koersbeweging passen zich aan.
+- **Economie (jouw inschatting): gunstig, neutraal of ongunstig.** Gunstig betekent dat de rente daalt, de inflatie zakt en de beurzen stijgen. Ongunstig betekent dat de rente stijgt, er recessievrees is en de beurzen dalen.
+
+Daarnaast gelden deze veiligheidsregels:
+
+1. De mogelijke winst moet na kosten minstens 1,5× tot 2,5× zo groot zijn als het risico. Hoe lager je risico, hoe strenger deze eis.
+2. Niet tegen de trend in handelen: geen long onder de 200-EMA en geen short erboven.
+3. Het **marktkompas** bepaalt of een bot met volle inzet, halve inzet of helemaal niet mag kopen of shorten. Het kijkt naar:
+   - de hogere trend
+   - de 4-jarige Bitcoin-cyclus rond de halvering (telt mee bij week- en maandtraden)
+   - jouw inschatting van de economie
+   - de angst-en-hebzuchtindex
+4. Na 2 verliezen op rij neemt een bot een pauze.
+5. Verlieslimiet: na 3× het risico aan verlies doet een bot die dag, week of maand geen nieuwe trades meer.
+6. Een bot stopt helemaal na 10× het risico aan daling vanaf zijn hoogste stand, en altijd bij de noodrem van €35.
+7. Geen hefboom: een positie is nooit groter dan het eigen geld van de bot.
+
+Historische patronen, zoals de halveringscyclus, zijn geen garantie.
+
+## Verdiend
+
+De tabel **Verdiend** laat per bot en voor alle bots samen zien wat er in het afgelopen uur, de afgelopen dag, week, maand en het afgelopen jaar verdiend of verloren is. Is een periode nog niet helemaal voorbij, dan zie je het bedrag sinds de start met een sterretje (*). Wil je week-, maand- of jaarcijfers zien, zet dan de oefenmarkt op **1 dag/s**.
 
 ## De bots
 
 1. **Steunkoper** koopt net boven een steunlijn en verkoopt net onder de weerstand. De stop ligt net onder de steun.
 2. **Weerstandverkoper** shortt net onder een weerstand en sluit net boven de steun.
-3. **Uitbraak omhoog / omlaag** handelen pas als een 15m-candle met 1,5× het gemiddelde volume door de lijn sluit.
+3. **Uitbraak omhoog / omlaag** handelen pas als een candle met 1,5× het gemiddelde volume door een sterke lijn sluit.
 4. **Toeval** gooit een munt. Dit is de controlegroep: een goede bot moet hem verslaan.
 
-De bots gebruiken de 9- en 20-EMA (1m en 5m) voor het momentum en de 200-EMA (5m) voor de trend. Kosten van 0,25% per trade zijn meegerekend. Standaard start elke bot met €50, met als doel €75 en een noodrem bij €35. Dit pas je aan bij **Instellingen**.
+De bots gebruiken de 9- en 20-EMA voor het momentum en de 200-EMA voor de trend, op de candles van de gekozen handelsstijl. Een trade kost 2× 0,25% (kopen en verkopen). Daarom zoeken de bots grotere koersbewegingen en handelen ze bij uur-traden bewust weinig.
 
-**Signaalknop:** rood = kopen (laagpunt), oranje = houden (stabiel), groen = verkopen (hoogtepunt). Bij Instellingen kun je ook de beurskleuren kiezen. Tik op de knop om te zien waarom de bots dit signaal geven.
+**Signaalknop:** rood = kopen (laagpunt), oranje = houden (stabiel), groen = verkopen (hoogtepunt). Tik op de knop om te zien waarom de bots dit signaal geven, met daarbij de cyclusmeter: waar de koers staat binnen zijn recente bandbreedte. Bij Instellingen kun je ook de beurskleuren kiezen.
 
 Zet **"Vraag mijn akkoord bij elke koop en verkoop"** aan als je elke trade zelf wilt goedkeuren.
 
