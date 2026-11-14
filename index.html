@@ -272,7 +272,7 @@ function priceAt(ts){
 function z(s){return Math.log(M.p/priceAt(M.t-s))/(VOL*Math.sqrt(s/YEAR));}
 
 // ================= live koersen: openbare Kraken WebSocket (geen account, geen sleutels) =================
-let ws=null,wsTimer=null,connAt=0,lastMsg=0;
+let ws=null,wsTimer=null,connAt=0,lastMsg=0,failCount=0;
 const IVS=[1,5,15,60,1440];
 function newLiveMarket(){return baseMarket({live:true,got:new Set()});}
 function setConn(st,txt){const c=$('#conn');c.className='conn '+(st||'');c.textContent=txt||'';}
@@ -286,8 +286,11 @@ function liveConnect(){
     for(const iv of IVS)s.send(JSON.stringify({method:'subscribe',params:{channel:'ohlc',symbol:[SYM],interval:iv,snapshot:true}}));
     s.send(JSON.stringify({method:'subscribe',params:{channel:'ticker',symbol:[SYM]}}));
   };
-  s.onmessage=e=>{if(ws!==s)return;lastMsg=Date.now();let m;try{m=JSON.parse(e.data);}catch(_){return;}onWs(m);};
-  s.onclose=()=>{if(ws!==s)return;ws=null;setConn('weg','○ VERBINDING WEG');if(LIVE())wsTimer=setTimeout(liveConnect,4000);};
+  let gotMsg=false;
+  s.onmessage=e=>{if(ws!==s)return;lastMsg=Date.now();gotMsg=true;failCount=0;let m;try{m=JSON.parse(e.data);}catch(_){return;}onWs(m);};
+  s.onclose=()=>{if(ws!==s)return;ws=null;setConn('weg','○ VERBINDING WEG');
+    if(!gotMsg&&++failCount>=2&&M&&!M.ready)$('#loadmsg').textContent='Kraken is vanaf deze pagina niet bereikbaar (geen internet, of de pagina mag geen live koersen ophalen). Open Botlab via GitHub Pages of als bestand op je pc, of oefen intussen op de oefenmarkt.';
+    if(LIVE())wsTimer=setTimeout(liveConnect,4000);};
   s.onerror=()=>{try{s.close();}catch(_){}};
 }
 function liveStop(){clearTimeout(wsTimer);if(ws){const o=ws;ws=null;try{o.close();}catch(e){}}setConn('','');}
@@ -685,7 +688,7 @@ function frame(now){
     if(now-lastSlow>300){lastSlow=now;renderSignal();renderTrends();renderLevels();renderBots();renderFeed();renderProps();}
   }else if(LIVE()){
     $('#clock').textContent='';
-    if(Date.now()-connAt>20000)$('#loadmsg').textContent='Het lukt nog niet om live koersen op te halen. Controleer je internet, of oefen intussen op de oefenmarkt.';
+    if(failCount<2&&Date.now()-connAt>20000)$('#loadmsg').textContent='Het lukt nog niet om live koersen op te halen. Controleer je internet, of oefen intussen op de oefenmarkt.';
   }
   requestAnimationFrame(frame);
 }
