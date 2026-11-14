@@ -42,14 +42,14 @@ YEAR, DAY, HOUR = 31536000, 86400, 3600
 VOL = 0.6  # aangenomen jaarvolatiliteit BTC, om trends te normaliseren
 
 DEFAULT_CFG = {
-    "beurs": "kraken",            # "kraken" of "bitvavo"
+    "beurs": "bitvavo",           # "bitvavo" of "kraken"
     "api_key": "",
     "api_secret": "",
     "bitvavo_operator_id": 1001,
     "start_eur": 50,
     "doel_eur": 75,
     "noodrem_eur": 35,
-    "fee_pct": 0.40,              # kosten per order: Kraken Pro taker 0,40%; Bitvavo ca. 0,25%
+    "fee_pct": 0.25,              # kosten per order: Bitvavo ca. 0,25%; Kraken Pro taker 0,40%
     "risico_pct": 1.0,            # max verlies per trade (incl. kosten) als % van de bot; ook instelbaar in het dashboard
     "handelsstijl": "dag",        # "uur", "dag", "week" of "maand"; ook instelbaar in het dashboard
     "economie": "neutraal",       # "gunstig", "neutraal" of "ongunstig" (jouw inschatting); ook in het dashboard
@@ -1537,6 +1537,9 @@ class Engine:
                 "trades": [{**t, "naam": DEF[t["bot"]]["naam"] if t["bot"] else "Systeem",
                             "kleur": DEF[t["bot"]]["kleur"] if t["bot"] else "#64748b"} for t in self.trades[:80]],
                 "mode": self.mode, "keys": self.ex.has_keys, "mock": MOCK,
+                "keyinfo": {"beurs": self.cfg.get("beurs", "kraken"), "eind": (str(self.cfg.get("api_key", "")).strip()[-4:] or ""),
+                            "kan_invullen": bool(local and not self.cfg.get("server_modus")), "pad": CFG_PATH if local else "",
+                            "herstart": (not MOCK) and str(self.cfg.get("api_key", "")).strip() != getattr(self.ex, "key", "")},
                 "settings": self.settings, "hz": {"naam": h["naam"], "uitleg": h["uitleg"], "min_range": h["min_range"],
                                                   "bar": LBL[h["bar"]], "lv": " + ".join(LBL[x[0]] for x in h["lv"]), "zone": h["zone"]},
                 "kompas": self.kompas, "rules": rules, "verdiend": self.verdiend(),
@@ -1759,6 +1762,8 @@ class Handler(BaseHTTPRequestHandler):
                 ok, msg = E.noodstop()
             elif path == "/api/settings":
                 ok, msg = E.set_settings(body)
+            elif path == "/api/keys":
+                ok, msg = save_keys(self, body)
             elif path == "/api/debug_signal" and MOCK:
                 b, p = E._bot(body.get("bot", "steun")), E.m.price
                 E.open(b, 1, "Testsignaal (alleen in testmodus)", p * 1.02, p * 0.99); ok, msg = True, "ok"
@@ -1767,6 +1772,42 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 return self._send(404, {"ok": False, "msg": "Onbekend"})
         self._send(200, {"ok": ok, "msg": msg})
+
+
+def save_keys(handler, body):
+    """API-sleutel opslaan in botlab_config.json. Alleen vanaf de pc zelf, nooit via de telefoon of een server."""
+    if not handler._local() or CFG.get("server_modus"):
+        return False, "Een sleutel invullen kan alleen op de pc waarop Botlab draait (veiligheid)."
+    if any(b["live"] and b["pos"] for b in E.bots) or E.pending:
+        return False, "Er staan nog echte posities of voorstellen open. Sluit die eerst af."
+    with open(CFG_PATH, encoding="utf-8-sig") as f:
+        cfg = json.load(f)
+    if body.get("verwijder"):
+        cfg["api_key"] = cfg["api_secret"] = ""
+        msg = "API-sleutel verwijderd."
+    else:
+        beurs = str(body.get("beurs", "")).lower().strip()
+        key, sec = str(body.get("api_key", "")).strip(), str(body.get("api_secret", "")).strip()
+        if beurs not in ("bitvavo", "kraken"):
+            return False, "Kies Bitvavo of Kraken."
+        if not key or not sec or any(c.isspace() for c in key + sec) or len(key) < 20 or len(sec) < 20:
+            return False, "Sleutel of geheim lijkt niet volledig. Kopieer ze opnieuw uit je beurs, zonder spaties."
+        if beurs == "bitvavo" and len(key) != 64:
+            return False, f"Een Bitvavo API-sleutel heeft 64 tekens; deze heeft er {len(key)}. Controleer of je de sleutel (niet het geheim) in het eerste vak plakt."
+        old = cfg.get("beurs")
+        cfg.update(beurs=beurs, api_key=key, api_secret=sec)
+        if old != beurs or "fee_pct" not in cfg:
+            cfg["fee_pct"] = 0.25 if beurs == "bitvavo" else 0.40
+        msg = f"Sleutel voor {beurs.capitalize()} opgeslagen (eindigt op …{key[-4:]})."
+    tmp = CFG_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2)
+    os.replace(tmp, CFG_PATH)
+    for k in ("beurs", "api_key", "api_secret", "fee_pct"):  # alleen voor de weergave; de beurs gebruikt de nieuwe sleutel pas na een herstart
+        if k in cfg:
+            CFG[k] = cfg[k]
+    E.log(None, "API-sleutel gewijzigd", msg.split(" (")[0], None, None, False)
+    return True, msg + " Sluit het zwarte Botlab-venster en start Botlab opnieuw om hem te gebruiken."
 
 
 def loop(market, engine):

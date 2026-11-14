@@ -269,6 +269,22 @@ dl.det{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;m
   <section class="card">
     <h2><span>Modus &amp; veiligheid</span></h2>
     <div id="modeinfo" style="font-size:13px"></div>
+    <div id="keybox" style="margin-top:12px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-size:13px">
+      <div style="font-weight:700;margin-bottom:6px">🔑 API-sleutel <span class="muted" id="keystat" style="font-weight:400"></span></div>
+      <div class="row" style="margin-top:4px">
+        <a class="btn" href="https://account.bitvavo.com/user/api" target="_blank" rel="noopener">Bitvavo: sleutel maken ↗</a>
+        <a class="btn" href="https://pro.kraken.com/app/settings/api" target="_blank" rel="noopener">Kraken: sleutel maken ↗</a>
+      </div>
+      <div class="muted small">Rechten: alleen <b>Bekijken</b> en <b>Handelen</b>, <b>nooit Opnemen</b>. Zet een IP-whitelist met het IP-adres van deze pc. Bij Bitvavo: bevestig de sleutel daarna via de e-mail.</div>
+      <div id="keyform">
+        <div class="row"><select id="kbeurs" style="font:inherit;background:#0c1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 9px"><option value="bitvavo">Bitvavo</option><option value="kraken">Kraken</option></select></div>
+        <div class="row"><input id="kkey" placeholder="API-sleutel" autocomplete="off" spellcheck="false" style="width:100%;font-family:Consolas,monospace"></div>
+        <div class="row"><input id="ksec" type="password" placeholder="API-geheim" autocomplete="new-password" spellcheck="false" style="width:100%;font-family:Consolas,monospace"></div>
+        <div class="row"><button id="ksave" class="ok">💾 Sleutel opslaan</button><button id="kdel">Sleutel verwijderen</button></div>
+        <div class="muted small">Wordt alleen op deze pc opgeslagen in <span class="mono" id="kpad"></span>. Nooit op GitHub, nooit naar Claude. Herstart Botlab daarna.</div>
+      </div>
+      <div id="keyphone" class="muted small" style="display:none">Een sleutel invullen kan alleen op de pc zelf, niet op je telefoon (veiligheid).</div>
+    </div>
     <div class="row">
       <button id="btest">🔌 Test verbinding</button>
       <button id="brestart">↺ Bots opnieuw</button>
@@ -440,7 +456,18 @@ function renderFeed(){
     const col=/Open long/.test(x.actie)?'up':/Open short|mislukt/.test(x.actie)?'down':'muted';
     return `<li data-trade="${S.trades.indexOf(x)}"><span class="mono muted">${tStr(x.t)}</span><span><span class="tag" style="background:${x.kleur}"></span><b>${esc(x.naam)}</b> · <span class="${col}">${esc(x.actie)}</span>${x.echt?'<span class="e">ECHT</span>':''}${x.ret!=null?` <span class="mono ${cls(x.ret)}">${pct(x.ret)}</span>`:''}</span>${res}<span class="why">${esc(x.why)}</span></li>`;}).join('');
 }
+function renderKeys(){
+  const K=S.keyinfo||{};
+  $('#keystat').innerHTML=K.herstart?(K.eind?`· opgeslagen voor ${K.beurs==='bitvavo'?'Bitvavo':'Kraken'} (…${esc(K.eind)}). <b style="color:#fcd34d">Herstart Botlab om hem te gebruiken.</b>`:'· verwijderd. <b style="color:#fcd34d">Herstart Botlab.</b>')
+    :S.keys?`· ingesteld voor ${K.beurs==='bitvavo'?'Bitvavo':'Kraken'}${K.eind?' (eindigt op …'+esc(K.eind)+')':''}`:'· nog niet ingesteld';
+  $('#keyform').style.display=K.kan_invullen?'block':'none';$('#keyphone').style.display=K.kan_invullen?'none':'block';
+  $('#kpad').textContent=K.pad||'botlab_config.json';
+  if(!$('#kbeurs').dataset.set){$('#kbeurs').value=S.keys&&K.beurs==='kraken'?'kraken':'bitvavo';$('#kbeurs').dataset.set='1';}
+}
+$('#ksave').onclick=async()=>{const r=await post('/api/keys',{beurs:$('#kbeurs').value,api_key:$('#kkey').value.trim(),api_secret:$('#ksec').value.trim()});say(r);if(r.ok){$('#kkey').value='';$('#ksec').value='';}poll();};
+$('#kdel').onclick=async()=>{if($('#kdel').dataset.arm!=='1'){$('#kdel').dataset.arm='1';$('#kdel').textContent='Klik nog eens om te verwijderen';setTimeout(()=>{$('#kdel').dataset.arm='';$('#kdel').textContent='Sleutel verwijderen';},4000);return;}$('#kdel').dataset.arm='';say(await post('/api/keys',{verwijder:true}));poll();};
 function renderMode(){
+  renderKeys();
   const echt=S.mode==='echt';
   $('#modeinfo').innerHTML=echt?'Modus: <b class="down">ECHT GELD</b>. Bots doen voorstellen, jij keurt goed: groene knop = kopen, rode knop = verkopen, oranje = laten staan (houden). Stop-loss en noodrem vragen óók akkoord: houd meldingen aan.'
     :`Modus: <b style="color:#fcd34d">PAPIER</b>. ${S.keys?'API-sleutel gevonden.':'Nog geen API-sleutel ingesteld: alleen papier mogelijk.'}`;

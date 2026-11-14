@@ -32,8 +32,9 @@ WAT HET DOET
    - Laat het zwarte venster open. Sluiten = bots stoppen (stand wordt bewaard).
 
 3. BEURS KIEZEN
-   Open botlab_config.json (ontstaat na de eerste start) met Kladblok en zet
-   "beurs" op "kraken" of "bitvavo". Opslaan en Botlab herstarten.
+   Standaard staat "beurs" op "bitvavo". Voor Kraken: kies Kraken bij het
+   invullen van je sleutel in het dashboard (zie stap 4), of zet in
+   botlab_config.json "beurs" op "kraken" en "fee_pct" op 0.40.
 
 4. API-SLEUTEL (pas na een paar weken papier)
    Je logt niet in met je wachtwoord: Botlab gebruikt een API-sleutel.
@@ -60,8 +61,16 @@ WAT HET DOET
        trades, Create & modify orders
      - NOOIT "Withdraw funds". Zet ook een IP-whitelist.
 
-   Plak sleutel en geheim in botlab_config.json bij "api_key" en "api_secret"
-   en herstart Botlab. Het bestand botlab_config.json komt nooit op GitHub.
+   SLEUTEL INVULLEN – de makkelijkste manier:
+     Open het dashboard op de pc (http://127.0.0.1:8765), kaart "Modus &
+     veiligheid" > "API-sleutel". Daar staan ook de knoppen naar de
+     sleutelpagina van Bitvavo en Kraken. Kies de beurs, plak sleutel en
+     geheim, klik "Sleutel opslaan" en herstart Botlab.
+     (Dit kan alleen op de pc zelf, niet via je telefoon.)
+   Of met de hand: open botlab_config.json (in dezelfde map als botlab.py)
+   met Kladblok, plak sleutel en geheim tussen de aanhalingstekens bij
+   "api_key" en "api_secret", sla op en herstart Botlab.
+   Het bestand botlab_config.json komt nooit op GitHub.
 
 5. ECHT HANDELEN AANZETTEN
    - Klik "Test verbinding". Je ziet je saldo. Bij Kraken wordt ook een
