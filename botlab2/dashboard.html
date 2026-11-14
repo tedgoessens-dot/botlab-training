@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Botlab">
+<meta name="theme-color" content="#0a0e16">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="manifest" href="/manifest.json">
+<title>Botlab 2</title>
+<style>
+:root{--buy:#dc2626;--sell:#16a34a;--bg:#0a0e16;--panel:#111725;--panel2:#151d2d;--line:#222b3d;--text:#e7ecf6;--muted:#8792a8;--up:#22c55e;--down:#ef4444}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Inter,system-ui,sans-serif;font-size:14px;line-height:1.4}
+.mono{font-family:Consolas,"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.down{color:var(--down)}.muted{color:var(--muted)}
+header{position:sticky;top:0;z-index:10;background:rgba(10,14,22,.95);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.brand h1{font-size:17px;margin:0}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.05em}
+.badge.papier{border:1px solid #7c5a12;color:#fcd34d;background:#2a1f08}
+.badge.echt{border:1px solid #b91c1c;color:#fff;background:#7f1d1d;animation:glow 2s infinite}
+@keyframes glow{50%{box-shadow:0 0 0 4px rgba(239,68,68,.25)}}
+.conn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.ok{background:var(--up);animation:pulse 1.6s infinite}.dot.err{background:var(--down)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+button{font:inherit;font-size:12.5px;font-weight:600;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer}
+button:hover{border-color:#3a4760}button:disabled{opacity:.5;cursor:default}
+button.ok{background:#14532d;border-color:#166534}button.no{background:#3a1212;border-color:#7f1d1d}
+button.danger{background:#7f1d1d;border-color:#b91c1c}
+button.on{background:#0e2a3d;border-color:#1e6a93;color:#bfe8ff}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;padding:6px 9px}.seg button.on{background:#0e2a3d}
+main{padding:14px 16px calc(40px + env(safe-area-inset-bottom));max-width:1400px;margin:0 auto;display:grid;gap:14px;grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.card h2{font-size:13px;margin:0 0 10px;font-weight:600;color:#c4cee2;text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.span2{grid-column:1/-1}
+.banner{grid-column:1/-1;font-size:13px;border-radius:10px;padding:9px 12px}
+.banner.papier{color:#d9c48a;background:#1e1709;border:1px solid #4a3a12}
+.banner.echt{color:#fecaca;background:#2a0d0d;border:1px solid #7f1d1d}
+.banner.err{color:#fecaca;background:#2a0d0d;border:1px solid #7f1d1d}
+#approvals{grid-column:1/-1;display:none;border-color:#b45309;background:#1c1406}
+#approvals h2{color:#fcd34d}
+.prop{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#0f1522;border:1px solid #3d2e0e;border-left:4px solid var(--c);border-radius:10px;padding:11px 12px;margin-top:8px}
+.prop .what{font-size:15px;font-weight:700}
+.prop .why{font-size:12.5px;color:#c8d1e3;margin-top:3px}
+.prop .meta{font-size:12px;color:var(--muted);margin-top:4px}
+.prop .btns{display:flex;gap:8px}
+.prop .btns button{padding:12px 18px;font-size:15px;min-height:46px}
+#qr img,#qr canvas{background:#fff;padding:8px;border-radius:10px}
+.pricebar{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:8px}
+.price{font-size:28px;font-weight:600}
+canvas{display:block;width:100%}
+#cv-price{height:330px}#cv-eq{height:260px}
+.trends{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tile{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.tile .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between}
+.tile .val{font-size:17px;font-weight:600;margin-top:2px}.tile .st{font-size:11.5px}
+.tile canvas{height:30px;margin-top:4px}
+.score{margin-top:10px;font-size:12.5px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.gauge{height:8px;border-radius:5px;background:linear-gradient(90deg,#7f1d1d,#3a4152 50%,#14532d);position:relative;margin-top:7px}
+.gauge i{position:absolute;top:-4px;width:3px;height:16px;background:#fff;border-radius:2px;transition:left .25s}
+.bots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.sig{font:inherit;font-weight:800;letter-spacing:.06em;font-size:13px;border-radius:10px;padding:8px 14px;border:0;color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 0 0 3px rgba(255,255,255,.04)}
+.sig.kopen{background:var(--buy)}.sig.houden{background:#ea580c}.sig.verkopen{background:var(--sell)}.sig.wacht{background:#334155;color:#cbd5e1}
+.sig small{font-weight:600;letter-spacing:0;opacity:.85}
+.light{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.05em;border-radius:8px;padding:4px 9px;color:#fff}
+.light.kopen{background:var(--buy)}.light.houden{background:#ea580c}.light.verkopen{background:var(--sell)}.light.wacht{background:#334155;color:#cbd5e1}
+#sigwhy{display:none;grid-column:1/-1}
+#sigwhy.on{display:block}
+.why3{margin:0;padding-left:18px;font-size:13px}
+.emas{display:grid;grid-template-columns:auto repeat(3,1fr);gap:4px 10px;font-size:12.5px;margin-top:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.emas b{font-weight:600}
+.lvls{list-style:none;margin:0;padding:0;font-size:12.5px}
+.lvls li{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;padding:6px 2px;border-bottom:1px solid #1a2233;align-items:center}
+.lvls .k{font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 6px;color:#fff}
+.k.steun{background:#166534}.k.weerstand{background:#991b1b}
+button.buy{background:var(--buy);border-color:transparent;color:#fff}button.sell{background:var(--sell);border-color:transparent;color:#fff}
+body.std{--buy:#16a34a;--sell:#dc2626}
+.bot{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;border-top:3px solid var(--c)}
+.bot .top{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.bot .nm{font-weight:700;display:flex;align-items:center;gap:7px}
+.bot .nm i{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.pill{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:#1d263a;color:#b7c3db;white-space:nowrap}
+.pill.long{background:#0f2e1c;color:#86efac}.pill.short{background:#3a1212;color:#fca5a5}
+.pill.doel{background:#123a2a;color:#6ee7b7}.pill.rem{background:#3a1212;color:#fca5a5}
+.pill.echt{background:#7f1d1d;color:#fff}.pill.pap{background:#2a1f08;color:#fcd34d}
+.bot .eq{font-size:22px;font-weight:600;margin-top:6px}.bot .ret{font-size:13px;font-weight:600}
+.track{position:relative;height:8px;background:#0c1220;border-radius:5px;margin:10px 0 3px;border:1px solid var(--line)}
+.track .fill{position:absolute;top:0;bottom:0;border-radius:5px}
+.track .mid{position:absolute;top:-3px;bottom:-3px;width:2px;background:#5b6780}
+.tracklbl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:9px;font-size:11px;color:var(--muted)}
+.stats b{display:block;color:var(--text);font-size:13px;font-weight:600}
+.posline{margin-top:9px;font-size:12px;min-height:17px}
+.thought{margin-top:6px;font-size:12px;color:#aeb9cf;background:#0d1320;border:1px dashed #2a3550;border-radius:8px;padding:7px 8px;min-height:48px}
+.how{font-size:11.5px;color:var(--muted);margin-top:4px;min-height:32px}
+.feed{list-style:none;margin:0;padding:0;max-height:330px;overflow:auto;font-size:12px}
+.feed li{display:grid;grid-template-columns:62px 1fr auto;gap:8px;padding:7px 2px;border-bottom:1px solid #1a2233;align-items:start}
+.feed .why{grid-column:2/4;color:var(--muted);font-size:11.5px;margin-top:-4px}
+.tag{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.e{font-size:9.5px;font-weight:700;background:#7f1d1d;color:#fff;border-radius:4px;padding:1px 4px;margin-left:4px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:500}
+.legend i{width:10px;height:3px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:middle}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.row input{font:inherit;background:#0c1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:110px}
+.msg{font-size:12.5px;margin-top:8px;min-height:18px}
+dl.cfg{display:grid;grid-template-columns:auto auto;gap:4px 14px;font-size:12.5px;margin:0}
+dl.cfg dt{color:var(--muted)}dl.cfg dd{margin:0}
+#toast{visibility:hidden;position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(120px);background:#13233a;border:1px solid #2b4a70;color:#dbeafe;padding:10px 16px;border-radius:12px;font-weight:600;transition:transform .3s;z-index:20;max-width:92vw;text-align:center}
+#toast.show{visibility:visible;transform:translateX(-50%) translateY(0)}
+@media (max-width:1300px){.bots{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:1000px){.bots{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:860px){main{grid-template-columns:minmax(0,1fr);padding:10px}.span2{grid-column:auto}.prop{grid-template-columns:1fr}}
+@media (max-width:520px){.bots{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>⚡ Botlab</h1>
+    <span class="badge papier" id="modebadge">PAPIER</span>
+    <span class="conn"><span class="dot" id="cdot"></span><span id="ctext">Verbinden…</span></span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button class="sig wacht" id="sigbtn" title="Klik voor de uitleg">● <span id="sigtxt">WACHT</span> <small>laag · stabiel · hoog</small></button>
+    <span class="mono muted" id="clock"></span>
+    <button id="notif">🔔 Meldingen aan</button>
+    <a id="logout" href="/logout" style="display:none;font-size:12.5px;color:#8792a8">Uitloggen</a>
+  </div>
+</header>
+
+<main>
+  <div class="banner papier" id="banner">Papiermodus: de bots handelen op <b>echte koersen</b> met nep-geld. Er gaat geen geld over de lijn.</div>
+
+  <section class="card" id="sigwhy">
+    <h2><span>Waarom dit signaal</span><span class="muted" id="sigkey" style="text-transform:none;letter-spacing:0"></span></h2>
+    <ul class="why3" id="sigwhyl"></ul>
+  </section>
+
+  <section class="card" id="approvals">
+    <h2><span>⏳ Jouw akkoord nodig</span><span class="muted" style="text-transform:none;letter-spacing:0">Niets wordt uitgevoerd zonder jouw klik</span></h2>
+    <div id="props"></div>
+  </section>
+
+  <section class="card span2">
+    <h2><span>Bots</span><span class="muted mono" id="totals" style="text-transform:none;letter-spacing:0"></span></h2>
+    <div class="bots" id="bots"></div>
+  </section>
+
+  <section class="card">
+    <h2><span id="mkt">BTC-EUR</span>
+      <div class="seg" id="tf"><button data-tf="1m">1m</button><button data-tf="5m">5m</button><button data-tf="15m">15m</button><button data-tf="1u">1u</button><button data-tf="1d">1d</button></div>
+    </h2>
+    <div class="pricebar">
+      <span class="price mono" id="price">–</span><span class="mono" id="chg24"></span>
+      <span class="legend"><span><i style="background:#22d3ee"></i>9 EMA</span><span><i style="background:#c084fc"></i>20 EMA</span><span><i style="background:#e5e7eb"></i>200 EMA</span><span><i style="background:#22c55e"></i>steun</span><span><i style="background:#ef4444"></i>weerstand</span><span>▲▼ open · ○ sluit</span></span>
+    </div>
+    <canvas id="cv-price"></canvas>
+  </section>
+
+  <section class="card">
+    <h2><span>Trend per tijdschaal</span></h2>
+    <div class="trends" id="trends"></div>
+    <div class="emas mono" id="emas"></div>
+  </section>
+
+  <section class="card">
+    <h2><span>Steun &amp; weerstand</span><span class="muted" style="text-transform:none;letter-spacing:0">uit swing-toppen en -bodems (1u + 15m)</span></h2>
+    <ul class="lvls" id="lvls"></ul>
+  </section>
+
+  <section class="card">
+    <h2><span>Vermogen per bot</span><span class="legend" id="eqlegend"></span></h2>
+    <canvas id="cv-eq"></canvas>
+  </section>
+
+  <section class="card">
+    <h2><span>Live trades</span></h2>
+    <ul class="feed" id="feed"></ul>
+  </section>
+
+  <section class="card">
+    <h2><span>Modus &amp; veiligheid</span></h2>
+    <div id="modeinfo" style="font-size:13px"></div>
+    <div class="row">
+      <button id="btest">🔌 Test verbinding</button>
+      <button id="brestart">↺ Bots opnieuw</button>
+      <button id="bstop" class="danger">⛔ Noodstop</button>
+    </div>
+    <div class="row" id="echtrow">
+      <span style="font-size:12.5px">Typ <b>ECHT</b> en klik om echt geld te gebruiken:</span>
+      <input id="confirm" placeholder="ECHT" autocomplete="off">
+      <button id="becht" class="no">Echt handelen aanzetten</button>
+    </div>
+    <div class="row" id="paprow" style="display:none"><button id="bpap">Terug naar papier</button></div>
+    <div class="msg" id="msg"></div>
+  </section>
+
+  <section class="card" id="phonecard" style="display:none">
+    <h2><span>📱 Op je iPhone</span></h2>
+    <div id="phonebody" style="font-size:13px"></div>
+  </section>
+
+  <section class="card">
+    <h2><span>Kleuren van de knoppen</span></h2>
+    <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:8px"><input type="radio" name="kl" value="mijn" checked> Mijn schema: <b style="color:#ef4444">kopen rood</b> · <b style="color:#f97316">houden oranje</b> · <b style="color:#22c55e">verkopen groen</b></label>
+    <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="radio" name="kl" value="std"> Beurs-standaard (zoals Kraken/Bitvavo): kopen groen · verkopen rood</label>
+  </section>
+
+  <section class="card">
+    <h2><span>Instellingen</span><span class="muted" style="text-transform:none;letter-spacing:0;font-size:11.5px">wijzigen in botlab_config.json</span></h2>
+    <dl class="cfg mono" id="cfg"></dl>
+  </section>
+</main>
+<div id="toast"></div>
+
+<script>
+"use strict";
+const TOKEN="__TOKEN__";
+const $=s=>document.querySelector(s);
+const HOUR=3600, DAY=86400;
+const fmtE=new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'});
+const fmtP=new Intl.NumberFormat('nl-NL',{maximumFractionDigits:0});
+const fmtQ=new Intl.NumberFormat('nl-NL',{maximumFractionDigits:8});
+const pct=(x,d=2)=>(x>=0?'+':'−')+Math.abs(x*100).toFixed(d).replace('.',',')+'%';
+const f2=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(2).replace('.',',');
+const cls=x=>x>0?'up':x<0?'down':'muted';
+const tStr=(t,sec=true)=>new Date(t*1000).toLocaleTimeString('nl-NL',sec?{hour:'2-digit',minute:'2-digit',second:'2-digit'}:{hour:'2-digit',minute:'2-digit'});
+const dStr=t=>new Date(t*1000).toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let S=null, tf='15m', lastPend='', builtTrends=false;
+
+async function post(path,body){
+  try{const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-Token':TOKEN},body:JSON.stringify(body||{})});return await r.json();}
+  catch(e){return {ok:false,msg:'Botlab-programma niet bereikbaar. Draait het venster nog?'};}
+}
+function say(r){const m=$('#msg');m.textContent=r.msg||'';m.className='msg '+(r.ok?'up':'down');toast(r.msg);}
+let tt;function toast(m){if(!m)return;const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3500);}
+
+// ---------- tekenen ----------
+function fit(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1,W=Math.round(r.width*d),H=Math.round(r.height*d);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);return {ctx,w:r.width,h:r.height};}
+const TFS={'1m':60,'5m':300,'15m':900,'1u':3600,'1d':86400};
+function drawPrice(){
+  const {ctx,w,h}=fit($('#cv-price'));const all=S.candles; if(!all.length)return;
+  const padR=64,padB=20,padT=10,n=Math.max(30,Math.min(150,Math.floor((w-padR)/8))),cs=all.slice(-n),B=TFS[S.tf];
+  let hi=-Infinity,lo=Infinity;for(const k of cs){if(k.h>hi)hi=k.h;if(k.l<lo)lo=k.l;}const pad=(hi-lo)*.08||1;hi+=pad;lo-=pad;
+  const cw=(w-padR)/n,Y=v=>padT+(hi-v)/(hi-lo)*(h-padB-padT),X=i=>i*cw+cw/2;
+  ctx.font='11px Consolas, monospace';ctx.textBaseline='middle';
+  for(let g=0;g<=4;g++){const v=lo+(hi-lo)*g/4,y=Y(v);ctx.strokeStyle='#1b2335';ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.fillStyle='#6b7690';ctx.fillText(fmtP.format(v),w-padR+6,y);}
+  const st=Math.max(1,Math.round(n/5));ctx.textAlign='center';
+  for(let i=0;i<cs.length;i+=st){const t=cs[i].t;ctx.fillStyle='#6b7690';ctx.fillText(S.tf==='1d'?dStr(t):S.tf==='1u'?dStr(t)+' '+tStr(t,false):tStr(t,false),X(i),h-8);}
+  ctx.textAlign='left';
+  // steun/weerstand
+  for(const L of S.levels){const y=Y(L.p);if(y<padT||y>h-padB)continue;const main=(S.sup&&L.p===S.sup.p)||(S.res&&L.p===S.res.p);const c=L.kind==='steun'?'#22c55e':'#ef4444';
+    ctx.globalAlpha=main?.95:.35;ctx.strokeStyle=c;ctx.lineWidth=main?2:1;ctx.setLineDash(main?[]:[6,4]);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.setLineDash([]);
+    if(main){ctx.globalAlpha=.10;ctx.fillStyle=c;const z=Math.abs(Y(L.p*(1+(L.kind==='steun'?1:-1)*S.cfg.zone_pct/100))-y);ctx.fillRect(0,L.kind==='steun'?y-z:y,w-padR,z);}
+    ctx.globalAlpha=1;ctx.fillStyle=c;ctx.font='10.5px Segoe UI, sans-serif';ctx.fillText(`${L.kind==='steun'?'Steun':'Weerstand'} ${fmtP.format(L.p)} (${L.n}×)`,w-padR-150,y+(L.kind==='steun'?12:-6));ctx.font='11px Consolas, monospace';ctx.lineWidth=1;}
+  const bw=Math.max(1,cw*.62);
+  cs.forEach((k,i)=>{const up=k.c>=k.o;ctx.strokeStyle=ctx.fillStyle=up?'#22c55e':'#ef4444';const x=X(i);ctx.beginPath();ctx.moveTo(x,Y(k.h));ctx.lineTo(x,Y(k.l));ctx.stroke();const y1=Y(Math.max(k.o,k.c)),y2=Y(Math.min(k.o,k.c));ctx.fillRect(x-bw/2,y1,bw,Math.max(1,y2-y1));});
+  // EMA's
+  const off=all.length-cs.length;
+  for(const [n,c,lw] of [['200','#e5e7eb',2],['20','#c084fc',1.5],['9','#22d3ee',1.5]]){const arr=(S.emas||{})[n]||[];ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.beginPath();let st=false;
+    cs.forEach((k,i)=>{const v=arr[arr.length-cs.length+i];if(v==null)return;const x=X(i),y=Y(v);if(y<0||y>h-padB){st=false;return;}st?ctx.lineTo(x,y):ctx.moveTo(x,y);st=true;});ctx.stroke();}
+  ctx.lineWidth=1;
+  for(const b of S.bots){if(!b.pos)continue;const y=Y(b.pos.entry);if(y<0||y>h-padB)continue;ctx.setLineDash([5,4]);ctx.strokeStyle=b.kleur;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=b.kleur;ctx.font='10.5px Segoe UI, sans-serif';ctx.fillText(`${b.naam} ${b.pos.side===1?'long':'short'}${b.live?' (echt)':''}`,4,y-8);ctx.font='11px Consolas, monospace';}
+  const t0=cs[0].t;
+  for(const m of S.marks){const i=Math.floor((m.t-t0)/B);if(i<0||i>=cs.length)continue;const x=X(i),y=Y(m.p);ctx.fillStyle=m.c;ctx.strokeStyle=m.c;ctx.lineWidth=1.5;
+    if(m.kind==='open'){ctx.beginPath();if(m.side===1){ctx.moveTo(x,y+4);ctx.lineTo(x-6,y+14);ctx.lineTo(x+6,y+14);}else{ctx.moveTo(x,y-4);ctx.lineTo(x-6,y-14);ctx.lineTo(x+6,y-14);}ctx.closePath();ctx.fill();}
+    else{ctx.beginPath();ctx.arc(x,y,4.5,0,Math.PI*2);ctx.fillStyle='#0a0e16';ctx.fill();ctx.stroke();}ctx.lineWidth=1;}
+  const yp=Y(S.price);ctx.setLineDash([2,3]);ctx.strokeStyle='#94a3b8';ctx.beginPath();ctx.moveTo(0,yp);ctx.lineTo(w-padR,yp);ctx.stroke();ctx.setLineDash([]);
+  const last=cs[cs.length-1];ctx.fillStyle=last.c>=last.o?'#16a34a':'#dc2626';ctx.fillRect(w-padR+1,yp-9,padR-2,18);ctx.fillStyle='#fff';ctx.fillText(fmtP.format(S.price),w-padR+6,yp);
+}
+function drawEq(){
+  const {ctx,w,h}=fit($('#cv-eq'));const padR=58,padB=18,padT=8;
+  let t0=Infinity,t1=S.now;for(const b of S.bots)t0=Math.min(t0,b.eq[0][0]);if(t1-t0<60)t1=t0+60;
+  const lines=[];for(const b of S.bots){lines.push(b.doel,b.rem);}
+  let hi=Math.max(...lines),lo=Math.min(...lines);for(const b of S.bots)for(const [,e] of b.eq){if(e>hi)hi=e;if(e<lo)lo=e;}
+  const pad=(hi-lo)*.06;hi+=pad;lo-=pad;
+  const X=t=>(t-t0)/(t1-t0)*(w-padR),Y=v=>padT+(hi-v)/(hi-lo)*(h-padB-padT);
+  ctx.font='11px Consolas, monospace';ctx.textBaseline='middle';
+  const b0=S.bots[0];
+  for(const [v,c,l] of [[b0.doel,'#22c55e','Doel'],[b0.start,'#64748b','Start'],[b0.rem,'#ef4444','Noodrem']]){const y=Y(v);ctx.setLineDash([6,5]);ctx.strokeStyle=c;ctx.globalAlpha=.7;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;ctx.fillStyle=c;ctx.fillText('€'+fmtP.format(v),w-padR+6,y);ctx.fillText(l,4,y-8);}
+  ctx.fillStyle='#6b7690';ctx.fillText(dStr(t0)+' '+tStr(t0,false),2,h-7);ctx.textAlign='right';ctx.fillText(dStr(t1)+' '+tStr(t1,false),w-padR,h-7);ctx.textAlign='left';
+  for(const b of S.bots){ctx.strokeStyle=b.kleur;ctx.lineWidth=2;ctx.beginPath();b.eq.forEach(([t,e],i)=>{i?ctx.lineTo(X(t),Y(e)):ctx.moveTo(X(t),Y(e));});ctx.stroke();ctx.lineWidth=1;const [lt,le]=b.eq[b.eq.length-1];ctx.fillStyle=b.kleur;ctx.beginPath();ctx.arc(X(lt),Y(le),3.5,0,Math.PI*2);ctx.fill();}
+}
+function spark(cv,pts,col){const {ctx,w,h}=fit(cv);let hi=Math.max(...pts),lo=Math.min(...pts);if(hi===lo){hi+=1;lo-=1;}ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();pts.forEach((v,i)=>{const x=i/(pts.length-1)*w,y=2+(hi-v)/(hi-lo)*(h-4);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.globalAlpha=.12;ctx.fillStyle=col;ctx.fill();ctx.globalAlpha=1;}
+
+// ---------- weergeven ----------
+function render(){
+  const echt=S.mode==='echt';
+  $('#modebadge').textContent=echt?'ECHT GELD':'PAPIER';$('#modebadge').className='badge '+(echt?'echt':'papier');
+  const age=S.now-S.last_ok, ok=S.ready&&!S.err&&age<15;
+  $('#cdot').className='dot '+(ok?'ok':S.err?'err':'');
+  $('#ctext').textContent=S.mock?'Testmodus (nagebootste beurs)':ok?'Live verbonden met '+S.beurs:S.err?'Verbindingsfout':'Verbinden…';
+  $('#clock').textContent=new Date().toLocaleTimeString('nl-NL');
+  const bn=$('#banner');
+  if(S.err){bn.className='banner err';bn.innerHTML='⚠️ '+esc(S.err)+' · Bots wachten tot de verbinding terug is.';}
+  else if(echt){bn.className='banner echt';bn.innerHTML=`🔴 <b>ECHT GELD</b> op ${esc(S.beurs)}: Steunkoper en Uitbraak omhoog handelen met echt geld (alleen long). <b>Elke order vraagt eerst jouw akkoord.</b> Shorts en Toeval blijven papier.`;}
+  else{bn.className='banner papier';bn.innerHTML=`Papiermodus: de bots handelen op <b>echte ${esc(S.beurs)}-koersen</b> met nep-geld. Er gaat geen geld over de lijn.`;}
+  if(!S.ready){return;}
+  $('#price').textContent=fmtE.format(S.price);const c=$('#chg24');c.textContent=pct(S.chg24)+' (24 u)';c.className='mono '+cls(S.chg24);
+  renderSignal();renderLevels();$('#mkt').textContent=`${S.market} · ${S.beurs}`;
+  renderProps();renderBots();renderTrends();renderFeed();renderMode();renderPhone();$('#logout').style.display=S.phone?'none':'inline';
+  drawPrice();drawEq();
+}
+function renderProps(){
+  const box=$('#approvals');box.style.display=S.pending.length?'block':'none';
+  const sig=S.pending.map(p=>p.id).join(',');
+  if(sig!==lastPend){
+    if(S.pending.length&&S.pending.some(p=>!lastPend.includes(p.id)))alertUser(S.pending[S.pending.length-1]);
+    lastPend=sig;
+    $('#props').innerHTML=S.pending.map(p=>{
+      const what=p.kind==='buy'?`${esc(p.naam)} wil KOPEN voor ${fmtE.format(p.amount_quote)}`:`${esc(p.naam)} wil VERKOPEN: ${fmtQ.format(p.qty)} BTC`;
+      return `<div class="prop" style="--c:${p.kleur}"><div><div class="what">${what}</div><div class="why">${esc(p.why)}</div><div class="meta">Marktorder ${esc(S.market)} · koers bij voorstel ${fmtP.format(p.price)} · <span class="left" data-exp="${p.expires}"></span></div></div><div class="btns"><button class="${p.kind==='buy'?'buy':'sell'}" data-a="${p.id}">✓ ${p.kind==='buy'?'Kopen':'Verkopen'}</button><button class="no" data-r="${p.id}" style="background:#ea580c;border-color:#c2410c">✕ Laten (houden)</button></div></div>`;}).join('');
+  }
+  document.title=S.pending.length?`(${S.pending.length}) Akkoord nodig – Botlab`:'Botlab – Bitvavo';
+  document.querySelectorAll('.left').forEach(el=>{const s=Math.max(0,Math.round(+el.dataset.exp-Date.now()/1000));el.textContent=`vervalt over ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;});
+}
+function renderBots(){
+  let tot=0,st=0;
+  $('#bots').innerHTML=S.bots.map(b=>{
+    tot+=b.e;st+=b.start;const ret=b.e/b.start-1,P=b.pos;
+    const pill=b.status==='doel'?'<span class="pill doel">🎯 DOEL</span>':b.status==='rem'?'<span class="pill rem">⛔ GESTOPT</span>':S.pending.some(p=>p.bot===b.id)?'<span class="pill pap">⏳ AKKOORD?</span>':P?(P.side===1?'<span class="pill long">▲ LONG</span>':'<span class="pill short">▼ SHORT</span>'):'<span class="pill">WACHT</span>';
+    const span=b.doel-b.rem,fx=Math.min(1,Math.max(0,(b.e-b.rem)/span)),mx=(b.start-b.rem)/span;
+    const fill=b.e>=b.start?`left:${mx*100}%;width:${(fx-mx)*100}%;background:#22c55e`:`left:${fx*100}%;width:${(mx-fx)*100}%;background:#ef4444`;
+    const posl=P?`<span class="mono">${P.side===1?'Long':'Short'} @ ${fmtP.format(P.entry)} · doel ${fmtP.format(P.tp)} · stop ${fmtP.format(P.sl)}</span> · <b class="mono ${cls(P.r)}">${pct(P.r)}</b>`:'<span class="muted">Geen open positie</span>';
+    return `<div class="bot" style="--c:${b.kleur}"><div class="top"><span class="nm"><i></i>${esc(b.naam)} ${b.live?'<span class="pill echt">ECHT</span>':'<span class="pill pap">PAPIER</span>'}</span>${pill}</div>
+      <div class="how">${esc(b.uitleg)}</div><div class="eq mono">${fmtE.format(b.e)}</div>
+      <div class="ret mono ${cls(ret)}">${pct(ret)} <span class="muted" style="font-weight:500">sinds start</span></div>
+      <div class="track"><div class="fill" style="${fill}"></div><div class="mid" style="left:${mx*100}%"></div></div>
+      <div class="tracklbl"><span>€${fmtP.format(b.rem)}</span><span>start €${fmtP.format(b.start)}</span><span>doel €${fmtP.format(b.doel)}</span></div>
+      <div class="stats"><div>Trades<b class="mono">${b.n}</b></div><div>Winst-%<b class="mono">${b.closed?Math.round(b.wins/b.closed*100)+'%':'–'}</b></div><div>Max daling<b class="mono">${(b.maxdd*100).toFixed(1).replace('.',',')}%</b></div></div>
+      <div class="posline">${posl}</div>
+      <div style="margin-top:8px">${light(b)}</div><div class="thought">🧠 ${esc(b.thought)}</div></div>`;}).join('');
+  const r=tot/st-1;$('#totals').innerHTML=`${fmtE.format(st)} → <b class="${cls(r)}">${fmtE.format(tot)}</b> <span class="${cls(r)}">(${pct(r)})</span>`;
+  $('#eqlegend').innerHTML=S.bots.map(b=>`<span><i style="background:${b.kleur}"></i>${esc(b.naam)}</span>`).join('');
+}
+function renderTrends(){
+  if(!builtTrends&&S.trends.length){$('#trends').innerHTML=S.trends.map((s,i)=>`<div class="tile"><div class="lbl"><span>${s.k}</span><span>${s.sub}</span></div><div class="val mono" id="tv${i}"></div><div class="st" id="ts${i}"></div><canvas id="tc${i}"></canvas></div>`).join('');builtTrends=true;}
+  S.trends.forEach((s,i)=>{const z=s.z,lab=z>1.5?'Sterk stijgend':z>.5?'Stijgend':z<-1.5?'Sterk dalend':z<-.5?'Dalend':'Zijwaarts';
+    const v=$('#tv'+i);v.textContent=pct(s.ch);v.className='val mono '+cls(s.ch);
+    const t=$('#ts'+i);t.textContent=(z>.5?'▲ ':z<-.5?'▼ ':'◆ ')+lab;t.className='st '+(z>.5?'up':z<-.5?'down':'muted');
+    spark($('#tc'+i),s.spark,s.ch>=0?'#22c55e':'#ef4444');});
+  const E=S.ema_now||{},g=(t,n)=>E[t]&&E[t][n]!=null?fmtP.format(E[t][n]):'–';
+  $('#emas').innerHTML=`<span></span><b>9 EMA</b><b>20 EMA</b><b>200 EMA</b><span class="muted">1m</span><span>${g('1m','9')}</span><span>${g('1m','20')}</span><span class="muted">–</span><span class="muted">5m</span><span>${g('5m','9')}</span><span>${g('5m','20')}</span><span>${g('5m','200')}</span>`;
+}
+function renderFeed(){
+  if(!S.trades.length){$('#feed').innerHTML='<li class="muted" style="display:block">Nog geen acties.</li>';return;}
+  $('#feed').innerHTML=S.trades.map(x=>{
+    const res=x.pnl==null?`<span class="mono">${x.p?fmtP.format(x.p):''}</span>`:`<b class="mono ${cls(x.pnl)}">${x.pnl>=0?'+':'−'}${fmtE.format(Math.abs(x.pnl))}</b>`;
+    const col=/Open long/.test(x.actie)?'up':/Open short|mislukt/.test(x.actie)?'down':'muted';
+    return `<li><span class="mono muted">${tStr(x.t)}</span><span><span class="tag" style="background:${x.kleur}"></span><b>${esc(x.naam)}</b> · <span class="${col}">${esc(x.actie)}</span>${x.echt?'<span class="e">ECHT</span>':''}${x.ret!=null?` <span class="mono ${cls(x.ret)}">${pct(x.ret)}</span>`:''}</span>${res}<span class="why">${esc(x.why)}</span></li>`;}).join('');
+}
+function renderMode(){
+  const echt=S.mode==='echt';
+  $('#modeinfo').innerHTML=echt?'Modus: <b class="down">ECHT GELD</b>. Bots doen voorstellen, jij keurt goed: groene knop = kopen, rode knop = verkopen, oranje = laten staan (houden). Stop-loss en noodrem vragen óók akkoord: houd meldingen aan.'
+    :`Modus: <b style="color:#fcd34d">PAPIER</b>. ${S.keys?'API-sleutel gevonden.':'Nog geen API-sleutel ingesteld: alleen papier mogelijk.'}`;
+  $('#echtrow').style.display=echt?'none':'flex';$('#paprow').style.display=echt?'flex':'none';
+  $('#becht').disabled=!S.keys;
+  const c=S.cfg;$('#cfg').innerHTML=[['Start per bot',fmtE.format(c.start_eur)],['Doel per bot',fmtE.format(c.doel_eur)],['Noodrem',fmtE.format(c.noodrem_eur)],['Max echt per bot',fmtE.format(c.max_echt_per_bot_eur)],['Max echt totaal',fmtE.format(c.max_echt_totaal_eur)],['Akkoord geldig',c.akkoord_geldig_sec+' s'],['Kosten (papier)',String(c.fee_pct).replace('.',',')+'%'],['Beurs',S.beurs],['Zone bij lijn',String(c.zone_pct).replace('.',',')+'%'],['Uitbraakbuffer',String(c.uitbraak_buffer_pct).replace('.',',')+'%'],['Stop voorbij lijn',String(c.stop_pct).replace('.',',')+'%'],['Min. range',String(c.min_range_pct).replace('.',',')+'%'],['Volume-eis',String(c.volume_factor).replace('.',',')+'×'],['EMA-filter',c.ema_filter?'aan':'uit']].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+}
+
+function light(b){
+  const pend=S.pending.find(p=>p.bot===b.id);
+  if(b.status!=='actief')return '<span class="light wacht">■ GESTOPT</span>';
+  if(pend)return pend.kind==='buy'?'<span class="light kopen">● KOPEN · akkoord?</span>':'<span class="light verkopen">● VERKOPEN · akkoord?</span>';
+  if(b.pos)return '<span class="light houden">● HOUDEN</span>';
+  return '<span class="light wacht">● WACHT</span>';
+}
+function renderSignal(){
+  const a=(S.signal&&S.signal.actie)||'HOUDEN',k=a.toLowerCase();
+  $('#sigbtn').className='sig '+k;$('#sigtxt').textContent=a;
+  $('#sigwhyl').innerHTML=(S.signal.why||[]).map(w=>`<li>${esc(w)}</li>`).join('')+`<li><b>${a}</b>: ${a==='KOPEN'?'laagpunt in een stijgende trend: kansrijk moment om te kopen':a==='VERKOPEN'?'hoogtepunt bereikt: moment om winst te nemen':'koers is stabiel of de signalen spreken elkaar tegen: houden'}.</li>`;
+}
+function renderLevels(){
+  if(!S.levels.length){$('#lvls').innerHTML='<li class="muted" style="display:block">Nog geen lijnen met minstens 2 aanrakingen.</li>';return;}
+  $('#lvls').innerHTML=S.levels.slice().sort((a,b)=>b.p-a.p).map(L=>{const main=(S.sup&&L.p===S.sup.p)||(S.res&&L.p===S.res.p);
+    return `<li style="${main?'font-weight:700':''}"><span class="k ${L.kind}">${L.kind==='steun'?'STEUN':'WEERSTAND'}</span><span class="mono">${fmtP.format(L.p)}${main?' ◀ actief':''}</span><span class="muted">${L.n}× geraakt</span><span class="mono ${cls(L.dist)}">${pct(L.dist)}</span></li>`;}).join('');
+}
+$('#sigbtn').onclick=()=>$('#sigwhy').classList.toggle('on');
+function setScheme(v){document.body.classList.toggle('std',v==='std');try{localStorage.setItem('botlab.kleuren',v);}catch(e){}
+  $('#sigkey').textContent=v==='std'?'groen = kopen · oranje = houden · rood = verkopen':'rood = kopen (laagpunt) · oranje = houden (stabiel) · groen = verkopen (hoogtepunt)';}
+document.querySelectorAll('input[name=kl]').forEach(r=>r.addEventListener('change',()=>setScheme(r.value)));
+(()=>{let v='mijn';try{v=localStorage.getItem('botlab.kleuren')||'mijn';}catch(e){}document.querySelector(`input[name=kl][value=${v==='std'?'std':'mijn'}]`).checked=true;setScheme(v);})();
+let qrDone='';
+function renderPhone(){
+  const P=S.phone;const card=$('#phonecard');
+  if(!P){card.style.display='none';return;} card.style.display='block';
+  if(!P.on){$('#phonebody').innerHTML='Zet in <b>botlab_config.json</b> <span class="mono">"telefoon_toegang": true</span>, sla op en herstart Botlab. Daarna staan hier de QR-code en de pincode voor je iPhone.';qrDone='';return;}
+  if(qrDone===P.url)return; qrDone=P.url;
+  $('#phonebody').innerHTML=`<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start"><div id="qr"></div><ol style="margin:0;padding-left:18px;flex:1;min-width:220px">
+    <li>iPhone op <b>dezelfde wifi</b> als deze pc.</li>
+    <li>Scan de QR-code met de camera, of open in Safari: <b class="mono">${esc(P.url)}</b></li>
+    <li>Pincode: <b class="mono" style="font-size:16px;letter-spacing:.15em">${esc(P.pin)}</b></li>
+    <li>Tik in Safari op <b>Deel → Zet op beginscherm</b>. Botlab opent dan als app.</li>
+    <li>Buiten de deur: installeer <b>Tailscale</b> op pc en iPhone (zelfde account) en gebruik het Tailscale-adres van de pc (100.x.x.x) met poort ${esc(P.url.split(':').pop())}.</li>
+    <li>${P.ntfy?'Pushmeldingen staan aan: installeer de app <b>ntfy</b> en abonneer op je onderwerp.':'Meldingen op je iPhone bij "akkoord nodig": vul <span class="mono">ntfy_onderwerp</span> in de config in en installeer de app <b>ntfy</b>.'}</li></ol></div>`;
+  const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  s.onload=()=>{try{new QRCode($('#qr'),{text:P.url,width:150,height:150});}catch(e){}};s.onerror=()=>{$('#qr').textContent='(QR-code niet beschikbaar: typ het adres over)';};
+  document.head.appendChild(s);
+}
+// ---------- meldingen ----------
+let actx=null;
+function beep(){try{if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=880;g.gain.value=.08;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.25);}catch(e){}}
+function alertUser(p){beep();try{if(window.Notification&&Notification.permission==='granted')new Notification('Botlab: akkoord nodig',{body:`${p.naam} wil ${p.kind==='buy'?'kopen':'verkopen'}`});}catch(e){}}
+$('#notif').onclick=async()=>{try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}try{if(window.Notification){const r=await Notification.requestPermission();toast(r==='granted'?'Meldingen staan aan':'Meldingen geweigerd: je hoort wel een piep');}}catch(e){}beep();};
+
+// ---------- knoppen ----------
+document.addEventListener('click',async e=>{
+  const a=e.target.dataset.a,r=e.target.dataset.r;
+  if(a){e.target.disabled=true;e.target.textContent='Bezig…';say(await post('/api/approve',{id:a}));lastPend='';poll();}
+  if(r){e.target.disabled=true;say(await post('/api/reject',{id:r}));lastPend='';poll();}
+});
+$('#tf').onclick=e=>{const v=e.target.dataset.tf;if(!v)return;tf=v;document.querySelectorAll('#tf button').forEach(b=>b.classList.toggle('on',b.dataset.tf===tf));poll();};
+$('#btest').onclick=async()=>say(await post('/api/test'));
+$('#brestart').onclick=async()=>say(await post('/api/restart'));
+$('#bstop').onclick=async()=>{if($('#bstop').dataset.arm!=='1'){$('#bstop').dataset.arm='1';$('#bstop').textContent='⛔ Klik nog eens: alles stoppen';setTimeout(()=>{$('#bstop').dataset.arm='';$('#bstop').textContent='⛔ Noodstop';},4000);return;}$('#bstop').dataset.arm='';$('#bstop').textContent='⛔ Noodstop';say(await post('/api/noodstop'));};
+$('#becht').onclick=async()=>{say(await post('/api/mode',{mode:'echt',confirm:$('#confirm').value.trim()}));$('#confirm').value='';poll();};
+$('#bpap').onclick=async()=>{say(await post('/api/mode',{mode:'papier'}));poll();};
+document.querySelectorAll('#tf button').forEach(b=>b.classList.toggle('on',b.dataset.tf===tf));
+
+async function poll(){
+  try{const r=await fetch('/api/state?tf='+tf,{cache:'no-store'});if(r.status===401){location.reload();return;}S=await r.json();render();}
+  catch(e){$('#cdot').className='dot err';$('#ctext').textContent='Botlab-programma niet bereikbaar';}
+}
+setInterval(poll,1500);poll();
+setInterval(()=>{if(S)renderProps();},1000);
+</script>
+</body>
+</html>

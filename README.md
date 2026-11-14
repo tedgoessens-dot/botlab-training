@@ -46,6 +46,15 @@ Zet **"Vraag mijn akkoord bij elke koop en verkoop"** aan als je elke trade zelf
 
 Let op: met een gratis GitHub-account werkt Pages alleen bij een **openbare** repository. Voor Pages op een privérepository heb je GitHub Pro nodig. Openbaar maken is hier veilig, want er staan geen sleutels of persoonlijke gegevens in.
 
+## Botlab2: het volledige programma (map `botlab2/`)
+
+In de map [`botlab2/`](botlab2/) staat het volledige Botlab-programma voor je Windows-pc of een eigen server. Het haalt live koersen op van Kraken of Bitvavo en kan, na jouw akkoord per order, ook met echt geld handelen. De uitleg staat in [`botlab2/LEESMIJ.txt`](botlab2/LEESMIJ.txt), en voor de server in [`botlab2/server/LEESMIJ-SERVER.txt`](botlab2/server/LEESMIJ-SERVER.txt).
+
+- Start met `start_botlab.bat` (Python nodig). Het dashboard opent op http://127.0.0.1:8765.
+- Je API-sleutels zet je alleen in `botlab_config.json` op je eigen pc of server. Dat bestand staat in `.gitignore` en komt dus **nooit** in deze repository, net als `botlab_state.json`.
+- Het dashboard in deze map werkt alleen samen met `botlab.py`, niet via GitHub Pages.
+
+
 ---
 
 Geen financieel advies. Resultaten op papier zeggen niets over echte winst.

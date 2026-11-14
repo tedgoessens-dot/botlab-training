@@ -1,0 +1,86 @@
+BOTLAB 2 – daytrade-bots op steun & weerstand (Kraken of Bitvavo, Windows)
+=========================================================================
+
+WAT HET DOET
+- Live BTC-EUR-koersen van Kraken of Bitvavo.
+- Zoekt automatisch steun- en weerstandslijnen (swing-toppen en -bodems
+  op de 1-uurs- en 15-minutengrafiek; hoe vaker geraakt, hoe sterker).
+- EMA-trend zoals daytraders die gebruiken: 9 en 20 EMA op 1m en 5m voor
+  het snelle momentum, 200 EMA op 5m voor de intraday-trend.
+- Signaalknop bovenaan:  ROOD = kopen (laagpunt) · ORANJE = houden (stabiel) ·
+  GROEN = verkopen (hoogtepunt). Omschakelen naar beurs-standaard kan
+  in het dashboard bij "Kleuren van de knoppen".
+- 5 bots (elk 50 euro, doel 75, noodrem 35):
+    Steunkoper         koopt net BOVEN steun, verkoopt net ONDER weerstand
+    Weerstandverkoper  shortt net ONDER weerstand (alleen papier)
+    Uitbraak omhoog    koopt als een 15m-candle met volume BOVEN weerstand sluit
+    Uitbraak omlaag    shortt bij een slot ONDER steun (alleen papier)
+    Toeval             controlegroep (alleen papier)
+  Met het EMA-filter handelen de bots alleen mee met de trend:
+  geen long onder de 200 EMA, geen short erboven, uitbraak alleen als
+  9 EMA de goede kant op boven/onder 20 EMA staat.
+- Start altijd in PAPIERMODUS. In ECHT-modus vraagt ELKE order jouw akkoord:
+  groene knop = kopen, rode knop = verkopen, oranje = laten staan (houden).
+
+1. PYTHON INSTALLEREN (eenmalig)
+   https://www.python.org/downloads/  ->  vink "Add python.exe to PATH" aan.
+
+2. STARTEN
+   - Pak de zip uit (bijv. Documenten\Botlab2) en dubbelklik start_botlab.bat.
+   - Je browser opent het dashboard: http://127.0.0.1:8765
+   - Laat het zwarte venster open. Sluiten = bots stoppen (stand wordt bewaard).
+
+3. BEURS KIEZEN
+   Open botlab_config.json (ontstaat na de eerste start) met Kladblok en zet
+   "beurs" op "kraken" of "bitvavo". Opslaan en Botlab herstarten.
+
+4. API-SLEUTEL (pas na een paar weken papier)
+   KRAKEN: Instellingen > API > nieuwe sleutel. Rechten:
+     - Funds: Query
+     - Orders and trades: Query open orders & trades, Query closed orders &
+       trades, Create & modify orders
+     - NOOIT "Withdraw funds". Zet ook een IP-whitelist.
+   BITVAVO: Instellingen > API > nieuwe sleutel met alleen "Bekijken" en
+     "Handelen", NOOIT "Opnemen". IP-whitelist aan.
+   Plak sleutel en geheim in botlab_config.json bij "api_key" en "api_secret".
+   Deel ze met niemand, ook niet in een chat. Herstart Botlab.
+
+5. ECHT HANDELEN AANZETTEN
+   - Klik "Test verbinding". Je ziet je saldo. Bij Kraken wordt ook een
+     testorder gecontroleerd zonder uit te voeren.
+   - Zorg voor minimaal 100 euro op de beurs (2 long-bots x 50 euro).
+   - Typ ECHT en klik "Echt handelen aanzetten".
+
+6. INSTELLINGEN (botlab_config.json)
+   zone_pct             "net boven steun / net onder weerstand": binnen 0,30%
+   uitbraak_buffer_pct  15m-slot moet 0,20% voorbij de lijn liggen
+   stop_pct             stop 0,40% aan de verkeerde kant van de lijn
+   min_range_pct        steun en weerstand minstens 1,2% uit elkaar (kosten!)
+   volume_factor        uitbraak-candle moet 1,5x gemiddeld volume hebben
+   ema_filter           true = alleen handelen mee met de EMA-trend
+   fee_pct              kosten per trade in papiermodus (Kraken Pro 0,40%,
+                        Bitvavo ca. 0,25%)
+   max_echt_per_bot_eur / max_echt_totaal_eur   harde grenzen echt geld
+
+7. OP JE IPHONE (als app)
+   Botlab draait op je pc. Je iPhone opent het dashboard van de pc.
+   a. Zet in botlab_config.json  "telefoon_toegang": true  en herstart.
+      Windows vraagt om toegang voor Python: kies "Privenetwerken" en klik Toestaan.
+   b. In het dashboard op de pc staat nu een blok "Op je iPhone" met een
+      QR-code, het adres (bijv. http://192.168.1.20:8765) en een pincode.
+      De pincode staat ook in het zwarte venster en in botlab_config.json.
+   c. iPhone op dezelfde wifi: scan de QR-code, vul de pincode in.
+   d. Safari: Deel > Zet op beginscherm. Botlab staat nu als app op je iPhone.
+   e. Buiten de deur (4G/5G): installeer Tailscale (gratis) op pc en iPhone met
+      hetzelfde account. Gebruik dan het Tailscale-adres van de pc (100.x.x.x)
+      met :8765. Zet NOOIT poort 8765 open in je router.
+   f. Pushmelding bij "akkoord nodig": installeer de app ntfy, bedenk een lang
+      geheim onderwerp (bijv. botlab-ted-8k3j2q9x), vul dat in bij
+      "ntfy_onderwerp" en abonneer je in de app op datzelfde onderwerp.
+   De pc moet aan staan en Botlab moet draaien, anders werkt de app niet.
+
+LET OP
+- Geen financieel advies, geen garantie op winst. Lijnen breken vaak
+  (valse uitbraken), en kosten wegen zwaar bij kleine bedragen.
+- Getest tegen een nagebootste beurs, niet tegen je eigen account.
+  Controleer je eerste echte order in de app van de beurs.

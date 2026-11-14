@@ -1,0 +1,74 @@
+BOTLAB OP EEN SERVER – bots 24/7, iPhone-app overal
+====================================================
+
+WAT JE KRIJGT
+- De bots draaien dag en nacht, ook als je pc uit staat.
+- De iPhone-app werkt overal. Inloggen met pincode, daarna 30 dagen
+  ingelogd.
+- Pushmeldingen (ntfy) bij "akkoord nodig", doel of noodrem.
+- Vast IP-adres van de server: gebruik dat in de IP-whitelist van je
+  API-sleutel bij Kraken of Bitvavo.
+
+1. SERVER HUREN
+   Een kleine Linux-server (VPS) is genoeg: 1 vCPU, 1-2 GB geheugen,
+   Ubuntu 24.04. Bijvoorbeeld bij Hetzner, TransIP of DigitalOcean
+   (kies een datacenter in de EU).
+   Je krijgt een IP-adres en een wachtwoord of SSH-sleutel.
+
+2. BESTANDEN NAAR DE SERVER
+   Op Windows (PowerShell), in de map waar je de zip hebt uitgepakt:
+     scp -r Botlab2 root@IP-VAN-SERVER:/root/
+   Inloggen op de server:
+     ssh root@IP-VAN-SERVER
+
+3. INSTALLEREN – kies A of B
+
+   A. TAILSCALE (aanbevolen, het veiligst, geen domein nodig)
+      Installeer eerst Tailscale op je iPhone (App Store) en log in.
+        cd /root/Botlab2/server
+        sudo bash install_server.sh tailscale
+      Het script toont een link om de server aan je Tailscale-account
+      te koppelen. Open die link en log in met hetzelfde account.
+      Botlab is daarna ALLEEN bereikbaar via jouw Tailscale-netwerk.
+
+   B. EIGEN DOMEIN MET HTTPS
+      Maak bij je domeinbeheer een A-record, bijv. botlab.jouwdomein.nl
+      -> IP-VAN-SERVER. Daarna:
+        cd /root/Botlab2/server
+        sudo bash install_server.sh caddy botlab.jouwdomein.nl
+      Caddy regelt automatisch een HTTPS-certificaat.
+      Botlab is nu via internet bereikbaar, beveiligd met de pincode
+      (na 5 foute pogingen 5 minuten geblokkeerd).
+
+   Aan het eind toont het script het adres voor je iPhone en de pincode.
+
+4. API-SLEUTEL EN INSTELLINGEN
+     sudo nano /var/lib/botlab/botlab_config.json
+   Vul "beurs", "api_key", "api_secret" (en eventueel "ntfy_onderwerp") in.
+   Opslaan: Ctrl+O, Enter, Ctrl+X. Daarna:
+     sudo systemctl restart botlab
+   Zet bij de API-sleutel een IP-whitelist met het IP van de server.
+   Nooit opnamerechten geven.
+
+5. OP JE IPHONE
+   - Open het adres uit stap 3 in Safari en vul de pincode in.
+   - Deel > Zet op beginscherm.
+   - Optioneel: app ntfy, abonneer op je ntfy_onderwerp.
+
+HANDIGE COMMANDO'S (op de server)
+   sudo systemctl status botlab          draait hij?
+   sudo journalctl -u botlab -f          live meekijken (Ctrl+C = stoppen)
+   sudo systemctl restart botlab         herstarten
+   sudo systemctl stop botlab            stoppen
+   sudo bash update_server.sh            nieuwe versie plaatsen
+                                         (config en stand blijven staan)
+
+VEILIGHEID
+- Botlab start altijd in PAPIERMODUS. Echt geld pas na "Test verbinding"
+  en ECHT intypen. Elke echte order vraagt jouw akkoord in de app.
+- Config en API-sleutel staan in /var/lib/botlab en zijn alleen leesbaar
+  voor de gebruiker botlab.
+- De service draait als aparte gebruiker zonder extra rechten en start na
+  een crash of reboot vanzelf opnieuw.
+- Houd de server bij:  sudo apt update && sudo apt upgrade
+- Geen financieel advies, geen garantie op winst.

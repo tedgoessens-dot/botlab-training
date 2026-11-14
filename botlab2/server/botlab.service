@@ -1,0 +1,22 @@
+[Unit]
+Description=Botlab tradingbots (steun/weerstand, EMA)
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+User=botlab
+Group=botlab
+Environment=BOTLAB_DATA=/var/lib/botlab
+Environment=BOTLAB_NOBROWSER=1
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /opt/botlab/botlab.py
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/botlab
+
+[Install]
+WantedBy=multi-user.target

@@ -18,3 +18,9 @@ desktop.ini
 # Afhankelijkheden en logbestanden
 node_modules/
 *.log
+
+# Botlab2: eigen config (API-sleutels, pincode) en stand blijven altijd lokaal
+botlab_config.json
+botlab_state.json
+*.tmp
+__pycache__/
