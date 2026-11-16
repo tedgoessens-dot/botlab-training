@@ -1,93 +1,29 @@
 # Botlab Training
 
-*showmethemoney*
+Een trainingsomgeving voor crypto-tradingbots met **live koersen** van Bitvavo en Kraken.
+Alles draait in je browser. Er is geen server en er gaat geen echt geld om.
 
-Oefen met crypto-tradingbots op **live BTC/EUR-koersen** met **nep-geld**. Botlab Training draait volledig in je browser, op je pc en op je iPhone. Je hebt geen server, geen account en geen API-sleutels nodig.
+**Online openen:** https://tedgoessens-dot.github.io/botlab-training/
 
-**Online:** https://tedgoessens-dot.github.io/botlab-training/ (werkt zodra GitHub Pages aan staat, zie hieronder)
+## Wat het doet
 
-## Veilig
+- Toont realtime koersen via de openbare websocket-feeds van Bitvavo en Kraken
+- Laat de bots oefenen op papier: kopen net boven steun, verkopen net onder weerstand of handelen op een uitbraak, met de 9/20/200 EMA
+- Signaalkleuren: **rood** = kopen bij een laagpunt, **oranje** = houden, **groen** = verkopen
+- Je instellingen en oefenresultaten blijven bewaard in de browser van je eigen apparaat
 
-- **Alleen papierhandel.** De bots kopen en verkopen met nep-geld. Er gaan nooit echte orders uit.
-- **Geen sleutels of wachtwoorden.** De koersen komen van de openbare koersfeed van Kraken (`wss://ws.kraken.com/v2`). Daar is geen account voor nodig.
-- **Geen gegevens naar buiten.** Je kleurinstelling en de gekozen modus worden alleen in je eigen browser bewaard.
-- Zet nooit API-sleutels, wachtwoorden of `.env`-bestanden in deze repository. De `.gitignore` houdt de meest voorkomende al tegen.
+## Op de iPhone
 
-## Twee standen
+1. Open de link hierboven in Safari.
+2. Tik op het deelicoon en kies **Zet op beginscherm**.
+3. Botlab Training staat dan als app-icoon op je telefoon.
 
-| Stand | Koers | Snelheid |
-| --- | --- | --- |
-| **Live** | Echte BTC/EUR-koers van Kraken | Echte tijd. De bots lopen alleen zolang de pagina open is. |
-| **Oefenmarkt** | Gesimuleerde koers, met rustige en drukke periodes | Versnelbaar tot 1 dag per seconde, dus ook week-, maand- en jaarresultaten |
+## Veiligheid
 
-## Opdracht: handelen met zo weinig mogelijk risico
+- Er staan **geen API-sleutels** of wachtwoorden in deze code en die horen er ook nooit in.
+- De pagina gebruikt alleen openbare koersdata. Er worden geen orders geplaatst.
+- Deze repository is openbaar. Zet hier dus nooit sleutels, saldo's of persoonlijke gegevens neer.
 
-Bovenaan stel je drie dingen in:
+## Bijwerken
 
-- **Risico per trade (schuifregelaar, 0,25% tot 5%).** Elke trade heeft vooraf een stop. De bot kiest de grootte van de positie zo dat het verlies bij de stop, inclusief kosten, precies dit percentage van zijn vermogen is. Bij 1% en €50 is dat maximaal €0,50 per trade.
-- **Handelsstijl: uur, dag, week of maand.** De bots kijken dan naar andere candles, van 1 en 5 minuten bij uur-traden tot dagcandles bij maandtraden. Ook stop, zone en minimale koersbeweging passen zich aan.
-- **Economie (jouw inschatting): gunstig, neutraal of ongunstig.** Gunstig betekent dat de rente daalt, de inflatie zakt en de beurzen stijgen. Ongunstig betekent dat de rente stijgt, er recessievrees is en de beurzen dalen.
-
-Daarnaast gelden deze veiligheidsregels:
-
-1. De mogelijke winst moet na kosten minstens 1,5× tot 2,5× zo groot zijn als het risico. Hoe lager je risico, hoe strenger deze eis.
-2. Niet tegen de trend in handelen: geen long onder de 200-EMA en geen short erboven.
-3. Het **marktkompas** bepaalt of een bot met volle inzet, halve inzet of helemaal niet mag kopen of shorten. Het kijkt naar:
-   - de hogere trend
-   - de 4-jarige Bitcoin-cyclus rond de halvering (telt mee bij week- en maandtraden)
-   - jouw inschatting van de economie
-   - de angst-en-hebzuchtindex
-4. Na 2 verliezen op rij neemt een bot een pauze.
-5. Verlieslimiet: na 3× het risico aan verlies doet een bot die dag, week of maand geen nieuwe trades meer.
-6. Een bot stopt helemaal na 10× het risico aan daling vanaf zijn hoogste stand, en altijd bij de noodrem van €35.
-7. Geen hefboom: een positie is nooit groter dan het eigen geld van de bot.
-
-Historische patronen, zoals de halveringscyclus, zijn geen garantie.
-
-## Verdiend
-
-De tabel **Verdiend** laat per bot en voor alle bots samen zien wat er in het afgelopen uur, de afgelopen dag, week, maand en het afgelopen jaar verdiend of verloren is. Is een periode nog niet helemaal voorbij, dan zie je het bedrag sinds de start met een sterretje (*). Wil je week-, maand- of jaarcijfers zien, zet dan de oefenmarkt op **1 dag/s**.
-
-## De bots
-
-1. **Steunkoper** koopt net boven een steunlijn en verkoopt net onder de weerstand. De stop ligt net onder de steun.
-2. **Weerstandverkoper** shortt net onder een weerstand en sluit net boven de steun.
-3. **Uitbraak omhoog / omlaag** handelen pas als een candle met 1,5× het gemiddelde volume door een sterke lijn sluit.
-4. **Toeval** gooit een munt. Dit is de controlegroep: een goede bot moet hem verslaan.
-
-De bots gebruiken de 9- en 20-EMA voor het momentum en de 200-EMA voor de trend, op de candles van de gekozen handelsstijl. Een trade kost 2× 0,25% (kopen en verkopen). Daarom zoeken de bots grotere koersbewegingen en handelen ze bij uur-traden bewust weinig.
-
-**Signaalknop:** rood = kopen (laagpunt), oranje = houden (stabiel), groen = verkopen (hoogtepunt). Tik op de knop om te zien waarom de bots dit signaal geven, met daarbij de cyclusmeter: waar de koers staat binnen zijn recente bandbreedte. Bij Instellingen kun je ook de beurskleuren kiezen.
-
-Zet **"Vraag mijn akkoord bij elke koop en verkoop"** aan als je elke trade zelf wilt goedkeuren.
-
-## Openen
-
-- **Op je pc:** dubbelklik op `index.html`, of open de online link.
-- **Op je iPhone:** open de online link in Safari, tik op het deelicoon en kies **Zet op beginscherm**. Botlab opent dan als een eigen app.
-
-## GitHub Pages aanzetten (eenmalig)
-
-1. Ga in deze repository naar **Settings → Pages**.
-2. Kies bij **Source**: *Deploy from a branch*. Selecteer bij **Branch** `main` en de map `/ (root)` en klik op **Save**.
-3. Na ongeveer een minuut staat de site op https://tedgoessens-dot.github.io/botlab-training/.
-
-Let op: met een gratis GitHub-account werkt Pages alleen bij een **openbare** repository. Voor Pages op een privérepository heb je GitHub Pro nodig. Openbaar maken is hier veilig, want er staan geen sleutels of persoonlijke gegevens in.
-
-## Botlab2: het volledige programma (map `botlab2/`)
-
-In de map [`botlab2/`](botlab2/) staat het volledige Botlab-programma voor je Windows-pc of een eigen server. Het haalt live koersen op van Kraken of Bitvavo en kan, na jouw akkoord per order, ook met echt geld handelen. De uitleg staat in [`botlab2/LEESMIJ.txt`](botlab2/LEESMIJ.txt), en voor de server in [`botlab2/server/LEESMIJ-SERVER.txt`](botlab2/server/LEESMIJ-SERVER.txt).
-
-- Start met `start_botlab.bat` (Python nodig). Het dashboard opent op http://127.0.0.1:8765.
-- Je API-sleutels zet je alleen in `botlab_config.json` op je eigen pc of server. Dat bestand staat in `.gitignore` en komt dus **nooit** in deze repository, net als `botlab_state.json`.
-- Het dashboard in deze map werkt alleen samen met `botlab.py`, niet via GitHub Pages.
-- Botlab2 heeft dezelfde risico-opdracht als Botlab Training: een risico-schuif, de handelsstijl uur/dag/week/maand, het marktkompas, de veiligheidsregels en het overzicht Verdiend. Ook echte orders worden op het gekozen risico berekend, en elke order vraagt jouw akkoord.
-- **Logboek:** alles wat er gebeurt, komt in `botlab_logboek.csv` (opent in Excel). Je kunt het filteren en downloaden in het dashboard. Tik op een bot of trade voor alle details.
-- **Belasting (NL):** per jaar de stand op 1 januari (box 3) en een overzicht van je echte trades, met een download voor je administratie. Dit is geen belastingadvies.
-- Je persoonlijke bestanden (`botlab_config.json`, `botlab_state.json`, `botlab_logboek.csv`, `botlab_belasting.json`, `botlab_sessies.json`) staan in `.gitignore` en komen dus **nooit** in deze repository.
-- **Bitvavo API-sleutel maken:** zie stap 4 in [`botlab2/LEESMIJ.txt`](botlab2/LEESMIJ.txt).
-
-
----
-
-Geen financieel advies. Resultaten op papier zeggen niets over echte winst.
+Vervang `index.html` door een nieuwe versie. GitHub Pages zet de wijziging binnen een paar minuten online.
